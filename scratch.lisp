@@ -877,7 +877,8 @@
 
 
 
-(defparameter *pitches* (find-all-peaks 5))
+(defparameter *pitches* nil ;; (find-all-peaks 5)
+  )
 
 
 (defun write-pitches-to-file (filename)
