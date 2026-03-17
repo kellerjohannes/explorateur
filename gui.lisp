@@ -27,8 +27,8 @@
 
 (defun incudine-clock-loop ()
   (when (and *initializedp* *incudine-clock-sample-display*)
-    (set-all-texts *incudine-clock-sample-display* (format nil "Audio sample: ~d"
-                                                           (floor (inc:get-current-sample))))
+    (set-all-texts *incudine-clock-sample-display*
+                   (format nil "Audio sample: ~d" (floor (inc:get-current-sample))))
     (let* ((total-seconds (/ (inc:get-current-sample) (inc:get-sample-rate)))
            (total-minutes (floor (/ total-seconds 60.0)))
            (rest-seconds (floor (mod total-seconds 60.0)))
