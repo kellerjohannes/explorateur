@@ -2,6 +2,8 @@
   (:use :cl)
   (:nicknames :explo)
   (:export
+   :start-incudine-real-time-thread
+   :stop-incudine-real-time-thread
    ))
 
 
@@ -15,4 +17,10 @@
 
 (defpackage :explorateur.inc
   (:use :cl :incudine)
-  (:nicknames :inc))
+  (:nicknames :inc)
+  (:export
+   :start-real-time
+   :stop-real-time
+   :real-time-status
+   :get-current-sample
+   :get-sample-rate))

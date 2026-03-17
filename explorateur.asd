@@ -7,4 +7,5 @@
                (:file "incudine-interaction")
                (:file "modules")
                (:file "gui")
+               (:file "user-interaction-layer")
                ))
