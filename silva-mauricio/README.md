@@ -23,11 +23,13 @@ It enables:
 Wind pressure per pipe can be controlled via:
 
 ### CC40
+
 	- 64 = standard pressure
 	- 0–63 = under-pressure
 	- 65–127 = over-pressure
 
 ### Pitch Bend
+
 	- 0 = standard pressure
 
 ### MPE Pressure / Polyphonic Aftertouch
