@@ -1,7 +1,9 @@
 (asdf:defsystem "explorateur"
   :depends-on (:uiop :alexandria :incudine :drawer :clog :cl-svg)
   :serial t
-  :components ((:file "packages")
+  :components (
+               (:file "clog-svg")
+               (:file "packages")
                ;;(:file "scratch")
                ;;(:file "ui")
                (:file "incudine-interaction")

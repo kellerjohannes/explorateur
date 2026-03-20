@@ -86,7 +86,7 @@
     (let* ((svg (clog::create-svg-toplevel (content window)))
            (dot (clog::create-svg-circle svg :cx 50 :cy 50 :r 5))
            )
-      ;(set-on-click dot (lambda (obj) (declare (ignore obj)) (setf (clog::cx dot) 60)))
+      (set-on-click dot (lambda (obj) (format t "~&Circle ~a clicked.~%" obj)))
       )
     )
   ;;(js-execute obj "document.getElementById('test-circle').setAttribute('fill', 'green');")
