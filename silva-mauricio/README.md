@@ -10,12 +10,11 @@ The smARTsynth is a software environment designed to control L’Explorateur via
 
 It enables:
 
-	•	Selection of hardware and software devices per rank
-	•	Independent wind control per pipe
-	•	Control of meta parameters
-	•	Simultaneous control of multiple ranks
-	•	Integration of MIDI processes via Ableton
-
+- Selection of hardware and software devices per rank
+- Independent wind control per pipe
+- Control of meta parameters
+- Simultaneous control of multiple ranks
+- Integration of MIDI processes via Ableton
 ⸻
 
 ## Wind Control
@@ -147,9 +146,3 @@ Prevents automatic shutdown by sending periodic MIDI signals.
 
 For questions or troubleshooting:
 m.silvaorendain@icloud.com
-
-⸻
-
-If you want, I can also:
-	•	merge this with your virtual console report into one document
-	•	or format it for GitHub / publication / artistic research portfolio
