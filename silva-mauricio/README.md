@@ -16,8 +16,6 @@ It enables:
 - Simultaneous control of multiple ranks
 - Integration of MIDI processes via Ableton
 
-⸻
-
 ## Wind Control
 
 Wind pressure per pipe can be controlled via:
@@ -35,8 +33,6 @@ Wind pressure per pipe can be controlled via:
 ### MPE Pressure / Polyphonic Aftertouch
 - Same behavior as CC40
 
-⸻
-
 ## MIDI Structure
 
 Each rank (pipe group) has:
@@ -44,8 +40,6 @@ Each rank (pipe group) has:
 - Its own note range
 
 This allows independent control of multiple ranks.
-
-⸻
 
 ## Meta Parameters
 
@@ -57,8 +51,6 @@ The smARTvalve responds to additional MIDI CC parameters, including:
 
 All parameters are accessible via TouchOSC.
 
-⸻
-
 ## smARTsynth Environment
 
 A preconfigured MIDI system in Ableton Live including:
@@ -68,8 +60,6 @@ A preconfigured MIDI system in Ableton Live including:
 - TouchOSC mapping
 
 All mappings are preconfigured after installation.
-
-⸻
 
 ## Presets and FX
 
@@ -89,8 +79,6 @@ Include MIDI processing in Ableton:
 - Chord
 - MIDI transformations
 - Custom processes
-
-⸻
 
 ## Ableton Devices
 
@@ -114,8 +102,6 @@ Include MIDI processing in Ableton:
 - Transposition
 - Integrated FX
 
-⸻
-
 ## System Tools
 
 ### Keep On Message
@@ -135,15 +121,11 @@ Prevents automatic shutdown by sending periodic MIDI signals.
 - Central control interface
 - Mirrors system state via TouchOSC
 
-⸻
-
 ## Setup
 1.	Download required files
 2.	Install Ableton Pack and TouchOSC layout
 3.	Configure MIDI outputs
 4.	Save configuration as preset
-
-⸻
 
 ## Support
 
