@@ -39,7 +39,7 @@ This guide explains how to install and configure TouchOSC for use with the smART
 
 ## Testing the Setup
 1.	Switch to Control Surface Mode
--	Press the ▶ button
+-	Press the play button
 -	Or use Ctrl/Cmd + E
 2.	Interact with the interface:
 -	Move faders
@@ -47,9 +47,9 @@ This guide explains how to install and configure TouchOSC for use with the smART
 3.	Confirm that your connected software/device responds correctly
 
 ## Troubleshooting Tips
-	•	Ensure all devices are on the same network
-	•	On Windows, temporarily disable firewall for testing
-	•	Check that required ports are open
-	•	Make sure no other applications are blocking connections
+-	Ensure all devices are on the same network
+-	On Windows, temporarily disable firewall for testing
+-	Check that required ports are open
+- Make sure no other applications are blocking connections
 
 Official manual: https://hexler.net/touchosc/manual
