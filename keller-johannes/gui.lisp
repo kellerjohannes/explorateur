@@ -20,7 +20,7 @@
 (defparameter *incudine-clock-sample-display* nil)
 (defparameter *incudine-clock-display* nil)
 
-(defparameter *time-interval-incudine-clock* 0.2 "Time between clock updated in seconds.")
+(defparameter *time-interval-incudine-clock* 0.5 "Time between clock updated in seconds.")
 
 
 
@@ -45,7 +45,7 @@
   (let* ((window (create-gui-window obj
                                     :title "Incudine System Status"
                                     :width 300
-                                    :height 120))
+                                    :height 125))
          (rt-div (create-div (content window) :style "margin:5px;display:flex;flex-direction:row;justify-content:flex-start;align-items:center;gap:3px;"))
          (rt-indicator (create-div rt-div :style "width:15px;height:15px;border:solid black 1px;margin:2px;"))
          (rt-button (create-button rt-div :content "toggle real time processing"))
@@ -70,6 +70,37 @@
   ;; TODO Implement a custom REPL
   )
 
+
+(defun on-svg-test (obj)
+  (let ((window (create-gui-window obj)))
+    ;; (let* ((svg-data (svg:make-svg-toplevel 'svg:svg-1.1-toplevel :width 120 :height 60))
+    ;;       (key (svg:make-svg-symbol svg-data (:id :generate)
+    ;;                (svg:draw* (:rect :x 0 :y 0 :width 12 :height 23)))))
+    ;;   (svg:draw svg-data (:rect :x 10 :y 10 :width 20 :height 20))
+    ;;   (svg:draw svg-data (:circle :cx 60 :cy 30 :r 17 :id "test-circle") :fill "black")
+    ;;   (svg:draw svg-data (:use :xlink-href (svg:xlink-href key))
+    ;;             :x 80 :y 40 :fill "red")
+    ;;   (let ((svg-container (create-div (content window))))
+    ;;     (format t "~&SVG DATA: ~a" (svg::svg->string svg-data))
+    ;;     (create-child svg-container (svg::svg->string svg-data))))
+    (let* ((svg (clog::create-svg-toplevel (content window)))
+           (dot (clog::create-svg-circle svg :cx 50 :cy 50 :r 5))
+           )
+      ;(set-on-click dot (lambda (obj) (declare (ignore obj)) (setf (clog::cx dot) 60)))
+      )
+    )
+  ;;(js-execute obj "document.getElementById('test-circle').setAttribute('fill', 'green');")
+  )
+
+;(set-on-click)
+
+;; (let ((s (make-string-output-stream)))
+;;   (let ((scene (svg:make-svg-toplevel 'svg:svg-1.2-toplevel :width 120 :height 100)))
+;;     (svg:draw scene (:rect :x 10 :y 10 :width 30 :height 30))
+;;     (svg:stream-out s scene)
+;;     (format t "~a" (get-output-stream-string s))))
+
+
 (defun create-menu (body)
   (let* ((menu-bar (create-gui-menu-bar body))
          (system-menu (create-gui-menu-drop-down menu-bar :content "System"))
@@ -78,7 +109,10 @@
                                     :on-click 'on-incudine-monitor))
          (tmp (create-gui-menu-item system-menu
                                     :content "REPL"
-                                    :on-click 'on-repl)))
+                                    :on-click 'on-repl))
+         (tmp (create-gui-menu-item system-menu
+                                    :content "SVG test"
+                                    :on-click 'on-svg-test)))
     (declare (ignore tmp))))
 
 (defun on-new-browser (body)
