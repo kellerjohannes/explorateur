@@ -114,6 +114,9 @@
                                             :detuning detune)))
 
 
+;; TODO implement serialization
+
+
 (defun setup-explorateur ()
   (add-module 0 "Bourdun" 4)
   (add-module 1 "Flutes" 5)
