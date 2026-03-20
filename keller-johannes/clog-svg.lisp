@@ -3,7 +3,7 @@
 
 
 
-(defun create-SVG-with-html (connection-id html
+(defun create-SVG-with-ns (connection-id svg-element-name attributes-list
                          &key (clog-type 'clog-element) (html-id nil))
   "Low-level create a new CLOG-ELEMENT and attach it to HTML element on
 CONNECTION-ID. There must be a single outer block that will be set to
@@ -11,74 +11,39 @@ an internal id. The returned CLOG-ELEMENT requires placement or will
 not be visible, ie. place-after, etc. as it exists in the javascript
 clog array but is not in the DOM. If HTML-ID is nil, one is generated.
 (private)"
-  (format t "~&HTML: '~a'." (escape-string html :html t))
   (let ((web-id (if html-id
                     html-id
                     (format nil "CLOG~A" (generate-id)))))
-
     (cached-execute connection-id
                     (format nil "let svgNS = 'http://www.w3.org/2000/svg';
-  let newElement = document.createElementNS(svgNS, '~a');
-  clog['~A'] = newElement;
-  newElement.id = '~A';"
-                            html
-                            web-id web-id))
+let newElement = document.createElementNS(svgNS, '~a');
+newElement.id = '~a';
+~{newElement.setAttribute('~a', '~a');~}
+clog['~a'] = newElement;"
+                            svg-element-name
+                            web-id
+                            (alexandria:flatten attributes-list)
+                            web-id))
     (make-clog-element connection-id web-id :clog-type clog-type)))
 
 
 
 
 
-(defgeneric create-SVG-element (clog-obj html-tag &rest all-args
-                                &key content clog-type html-id auto-place
-                                &allow-other-keys)
-  (:documentation "Create a new CLOG-ELEMENT as child of CLOG-OBJ with any
-possible tag and keywords."))
 
-(defmethod create-SVG-element (clog-obj html-tag &rest all-args
-                               &key (content "")
-                                 clog-type
-                                 html-id
-                                 (auto-place t)
-                               &allow-other-keys)
-  (let* ((extra-args (alexandria:remove-from-plist all-args
-                                                   :content :clog-type
-                                                   :html-id :auto-place))
-         (html (with-output-to-string (*standard-output*)
-                 (format t "<~(~a~) " html-tag)
-                 (loop for (key value) on extra-args by #'cddr
-                       do (format t "~(~a~)=~s" key value))
-                 (format t " id=~s>~A</~(~a~)>" html-id content html-tag)))
-         (clog-type (or clog-type
-                        (let* ((class-name (intern (string-upcase
-                                                    (format nil "CLOG-~a"
-                                                            html-tag))
-                                                   :clog)))
-                          (when (find-class class-name nil)
-                            class-name))
-                        'clog-element)))
-    (create-SVG-child clog-obj html
-                      :clog-type  clog-type
-                      :html-id    html-id
-                      :auto-place auto-place)))
+(defgeneric create-SVG-child (clog-obj svg-element-name attributes-list
+                              &key html-id auto-place clog-type)
+  (:documentation ""))
 
-
-
-
-
-(defgeneric create-SVG-child (clog-obj html &key html-id auto-place clog-type)
-  (:documentation "Create a new CLOG-ELEMENT or sub-type of CLOG-TYPE from HTML
-as child of CLOG-OBJ and if :AUTO-PLACE (default t) place-inside-bottom-of
-CLOG-OBJ, you can also set auto-place to :bottom or :top. If HTML-ID is nil one
-will be generated. If auto-place is nil the object is stored in the connection-data
-and not subject to browser-gc requests."))
-
-(defmethod create-SVG-child ((obj clog-obj) html &key (html-id nil)
-                                               (auto-place t)
-                                               (clog-type 'clog-element))
-  (let ((child (create-SVG-with-html (connection-id obj) (escape-string html)
-                                     :clog-type clog-type
-                                     :html-id   html-id)))
+(defmethod create-SVG-child ((obj clog-obj) svg-element-name attributes-list
+                             &key (html-id nil)
+                               (auto-place t)
+                               (clog-type 'clog-element))
+  (let ((child (create-SVG-with-ns (connection-id obj)
+                                   svg-element-name
+                                   attributes-list
+                                   :clog-type clog-type
+                                   :html-id   html-id)))
     (setf (parent child) obj)
     (if auto-place
         (case auto-place
@@ -87,6 +52,10 @@ and not subject to browser-gc requests."))
           (t (place-inside-bottom-of obj child)))
         (setf (connection-data-item obj html-id) obj))
     child))
+
+
+
+
 
 
 
@@ -119,6 +88,14 @@ and not subject to browser-gc requests."))
                 :html-id html-id))
 
 
+(defmethod (setf svg-attribute) (value (obj clog-obj) attr-name)
+  (js-execute obj
+              (format nil "clog['~a'].setAttribute('~A', '~A');"
+                      (html-id obj)
+                      attr-name
+                      (escape-string value :html t)))
+  value)
+
 
 
 
@@ -126,13 +103,14 @@ and not subject to browser-gc requests."))
 (defclass clog-svg-circle (clog-element) ()
   (:documentation "CLOG SVG extension: SVG circle element."))
 
-(defgeneric create-svg-circle (clog-obj &key cx cy r))
+(defgeneric create-svg-circle (clog-obj &key cx cy r fill html-id))
 
-(defmethod create-svg-circle ((obj clog-obj) &key cx cy r html-id)
-  (create-SVG-child obj (format nil "<circle xmlns='http://www.w3.org/2000/svg' ~a ~a ~a fill='gold' visibility='visible'></circle>"
-                            (format nil "cx='~a'" cx)
-                            (format nil "cy='~a'" cy)
-                            (format nil "r='~a'" r))
+(defmethod create-svg-circle ((obj clog-obj) &key cx cy r fill html-id)
+  (create-SVG-child obj "circle" (list (list "cx" cx)
+                                       (list "cy" cy)
+                                       (list "r" r)
+                                       (list "fill" fill)
+                                       (list "visibility" "visible"))
                 :clog-type 'clog-svg-circle
                 :html-id html-id))
 
@@ -148,3 +126,17 @@ and not subject to browser-gc requests."))
 
 (defmethod (setf cx) (value (obj clog-svg-circle))
   (setf (property obj "cx") value))
+
+
+
+(defgeneric svg-fill (clog-svg-circle)
+  (:documentation "Get/Setf the fill of a SVG circle."))
+
+(defmethod svg-fill ((obj clog-svg-circle))
+  (property obj "fill"))
+
+(defgeneric (setf svg-fill) (value clog-svg-circle)
+  (:documentation "Set fill VALUE for CLOG-SVG-CIRCLE"))
+
+(defmethod (setf svg-fill) (value (obj clog-svg-circle))
+  (setf (property obj "fill") value))
