@@ -88,12 +88,13 @@ clog['~a'] = newElement;"
                 :html-id html-id))
 
 
+
+
 (defmethod (setf svg-attribute) (value (obj clog-obj) attr-name)
-  (js-execute obj
-              (format nil "clog['~a'].setAttribute('~A', '~A');"
-                      (html-id obj)
-                      attr-name
-                      (escape-string value :html t)))
+  (js-execute obj (format nil "clog['~a'].setAttribute('~A', '~A');"
+                          (html-id obj)
+                          attr-name
+                          (escape-string value :html t)))
   value)
 
 
@@ -103,40 +104,52 @@ clog['~a'] = newElement;"
 (defclass clog-svg-circle (clog-element) ()
   (:documentation "CLOG SVG extension: SVG circle element."))
 
-(defgeneric create-svg-circle (clog-obj &key cx cy r fill html-id))
-
 (defmethod create-svg-circle ((obj clog-obj) &key cx cy r fill html-id)
-  (create-SVG-child obj "circle" (list (list "cx" cx)
-                                       (list "cy" cy)
-                                       (list "r" r)
-                                       (list "fill" fill)
-                                       (list "visibility" "visible"))
+  (create-SVG-child obj "circle" `(("cx" ,cx) ("cy" ,cy) ("r" ,r)
+                                   ("fill" ,fill) ("visibility" "visible"))
                 :clog-type 'clog-svg-circle
                 :html-id html-id))
 
 
-(defgeneric cx (clog-svg-circle)
-  (:documentation "Get/Setf the CX of a SVG circle."))
 
-(defmethod cx ((obj clog-svg-circle))
-  (property obj "cx"))
+(defclass clog-svg-rect (clog-element) ()
+  (:documentation "CLOG SVG extension: SVG rect element."))
 
-(defgeneric (setf cx) (value clog-svg-circle)
-  (:documentation "Set cx VALUE for CLOG-SVG-CIRCLE"))
-
-(defmethod (setf cx) (value (obj clog-svg-circle))
-  (setf (property obj "cx") value))
-
+(defmethod create-svg-rect ((obj clog-obj) &key x y width height fill html-id)
+  (create-SVG-child obj "rect" `(("x" ,x) ("y" ,y)
+                                 ("width" ,width) ("height" ,height)
+                                 ("fill" ,fill))
+                    :clog-type 'clog-svg-rect
+                    :html-id html-id))
 
 
-(defgeneric svg-fill (clog-svg-circle)
-  (:documentation "Get/Setf the fill of a SVG circle."))
+(defclass clog-svg-ortho-shape (clog-element) ()
+  (:documentation "CLOG SVG extension: SVG path using online horizontal and vertical lines."))
 
-(defmethod svg-fill ((obj clog-svg-circle))
-  (property obj "fill"))
+(defun generate-path-string (deltas)
+  (let ((result "")
+        (direction "h"))
+    (loop for delta in deltas do
+      (progn (setf result (format nil "~a ~a ~a " result direction delta))
+             (if (string= direction "h")
+                 (setf direction "v")
+                 (setf direction "h"))))
+    result))
 
-(defgeneric (setf svg-fill) (value clog-svg-circle)
-  (:documentation "Set fill VALUE for CLOG-SVG-CIRCLE"))
+(defmethod create-svg-ortho-shape ((obj clog-obj)
+                                   &key x-origin y-origin html-id deltas fill stroke)
+  (create-SVG-child obj "path" (list (list "d" (format nil "M ~a ~a ~a Z"
+                                                       x-origin y-origin
+                                                       (generate-path-string deltas)))
+                                     (list "fill" fill)
+                                     (list "stroke" stroke))
+                    :clog-type 'clog-svg-ortho-shape
+                    :html-id html-id))
 
-(defmethod (setf svg-fill) (value (obj clog-svg-circle))
-  (setf (property obj "fill") value))
+
+
+(export 'create-svg-ortho-shape)
+(export 'create-svg-rect)
+(export 'create-svg-circle)
+(export 'create-svg-toplevel)
+(export 'svg-attribute)
