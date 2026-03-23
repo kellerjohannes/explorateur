@@ -158,9 +158,9 @@
         (setf (aref keyboard 9) (black-front (+ 5 (* 3/4 white-width) (* 3 white-width))
                                              (- 150 white-front-length)))
         (setf (aref keyboard 10) (black-front (+ 5 (* 3/4 white-width) (* 4 white-width))
-                                             (- 150 white-front-length)))
+                                              (- 150 white-front-length)))
         (setf (aref keyboard 11) (black-front (+ 5 (* 3/4 white-width) (* 5 white-width))
-                                             (- 150 white-front-length)))
+                                              (- 150 white-front-length)))
         (setf (aref keyboard 12) (black-front (+ 5 (* 3/4 white-width) (* 0 white-width))
                                               (- 150 (+ black-front-length white-front-length))))
         (setf (aref keyboard 13) (black-front (+ 5 (* 3/4 white-width) (* 1 white-width))
@@ -184,37 +184,34 @@
                                   (declare (ignore obj))
                                   (setf (svg-attribute ckey "fill") "transparent"))))))))))
 
-(defun on-svg-test (obj)
-  (let ((window (create-gui-window obj)))
-    (let* ((svg (create-svg-toplevel (content window)))
-           (dot (create-svg-circle svg :cx 50 :cy 50 :r 5 :fill "black"))
-           (square (create-svg-rect svg :x 150 :y 120 :width 25 :height 25 :fill "green"))
-           (key-shape (create-svg-ortho-shape svg :x-origin 60
-                                                  :y-origin 60
-                                                  :deltas (list 20 -30 -5 -20 -15)
-                                                  :fill "transparent"
-                                                  :stroke "black")))
-      (set-on-mouse-over key-shape (lambda (obj)
-                                     (setf (svg-attribute key-shape "fill") "yellow")))
-      (set-on-mouse-out key-shape (lambda (obj)
-                                    (setf (svg-attribute key-shape "fill") "white")))
-      (set-on-click square (lambda (obj)
-                             (declare (ignore obj))
-                             (setf (svg-attribute square "width") 45)))
-      (set-on-mouse-over dot (lambda (obj)
-                               (declare (ignore obj))
-                               (setf (svg-attribute dot "fill") "yellow")))
-      (set-on-mouse-out dot (lambda (obj)
-                              (declare (ignore obj))
-                              (setf (svg-attribute dot "fill") "black")))
-      (set-on-click dot (lambda (obj)
-                          (declare (ignore obj))
-                          (setf (svg-attribute dot "fill") "red"))))))
-
-
 (defun on-arciorgano-keyboard (obj)
   (let ((window (create-gui-window obj :width 1500 :height 800 :title "Arciorgano")))
     (create-arciorgano-keyboard (content window))))
+
+
+(defun make-value-field (mp-key)
+  (format nil "~a~@[ [~a]~]"
+          (mp:getmp mp-key)
+          (mp:get-range-string mp-key)))
+
+(defun make-parameter-table-line (obj key)
+  (let* ((line (create-div obj :style (format nil "width:100%;padding:2px;display:flex;border-bottom:solid black 1px;")))
+         (key-field (create-span line
+                                 :content (string-downcase (format nil "~a" key))
+                                 :style "width:150px;padding:2px"))
+         (value-field (create-span line
+                                   :content (make-value-field key)
+                                   :style "width:100px;padding:2px")))
+    (mp:add-gui-hook key (lambda (new-content)
+                           (setf (text value-field) (make-value-field key))))))
+
+(defun on-metaparameters-list (obj)
+  (let* ((window (create-gui-window obj :title "Metaparameters"))
+         (table (create-div (content window) :style "display:flex;flex-direction:column;")))
+    (maphash (lambda (key parameter)
+               (make-parameter-table-line table key))
+             (mp:metaparameter-table))
+    (mp:add-global-gui-hook (lambda (key) (make-parameter-table-line table key)))))
 
 (defun create-menu (body)
   (let* ((menu-bar (create-gui-menu-bar body))
@@ -225,13 +222,23 @@
          (tmp (create-gui-menu-item system-menu
                                     :content "REPL"
                                     :on-click 'on-repl))
-         (tmp (create-gui-menu-item system-menu
-                                    :content "SVG test"
-                                    :on-click 'on-svg-test))
          (keyboard-menu (create-gui-menu-drop-down menu-bar :content "Keyboards"))
          (tmp (create-gui-menu-item keyboard-menu
                                     :content "Arciorgano"
-                                    :on-click 'on-arciorgano-keyboard)))
+                                    :on-click 'on-arciorgano-keyboard))
+         (parameters-menu (create-gui-menu-drop-down menu-bar :content "Parameters"))
+         (tmp (create-gui-menu-item parameters-menu
+                                    :content "Snapshot management"
+                                    :on-click 'on-snapshot-management))
+         (tmp (create-gui-menu-item parameters-menu
+                                   :content "Metaparameter list"
+                                   :on-click 'on-metaparameters-list))
+         (tmp (create-gui-menu-item parameters-menu
+                                   :content "Pipe list"
+                                   :on-click 'on-pipe-list))
+         (tmp (create-gui-menu-item parameters-menu
+                                   :content "Valve list"
+                                   :on-click 'on-valve-list)))
     (declare (ignore tmp))))
 
 (defun on-new-browser (body)

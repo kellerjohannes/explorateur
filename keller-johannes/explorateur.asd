@@ -4,6 +4,7 @@
   :components (
                (:file "clog-svg")
                (:file "packages")
+               (:file "metaparameters")
                ;;(:file "scratch")
                ;;(:file "ui")
                (:file "incudine-interaction")
