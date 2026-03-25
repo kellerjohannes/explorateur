@@ -29,7 +29,9 @@
   (when (and *initializedp* *incudine-clock-sample-display*)
     (set-all-texts *incudine-clock-sample-display*
                    (format nil "Audio sample: ~d" (floor (inc:get-current-sample))))
-    (let* ((total-seconds (/ (inc:get-current-sample) (inc:get-sample-rate)))
+    (let* ((total-seconds (/ (inc:get-current-sample) (if (zerop (inc:get-sample-rate))
+                                                          1.0
+                                                          (inc:get-sample-rate))))
            (total-minutes (floor (/ total-seconds 60.0)))
            (rest-seconds (floor (mod total-seconds 60.0)))
            (total-hours (floor (/ total-minutes 60.0)))
@@ -314,6 +316,7 @@
 
 (defun init (&key (host "0.0.0.0") (port *clog-port*) (start-browser t) clogframe)
   (initialize 'on-new-browser :host host :port port)
+  (setf *initializedp* t)
   (when clogframe
     (uiop:run-program (list "./clogframe"
                             "Explorateur Standalone"
