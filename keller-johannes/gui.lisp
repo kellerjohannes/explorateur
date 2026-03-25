@@ -311,7 +311,19 @@
 
 (defparameter *initializedp* nil)
 
-(defun start ()
-  (initialize #'on-new-browser)
-  (setf *initializedp* t)
-  (open-browser))
+
+(defun init (&key (host "0.0.0.0") (port *clog-port*) (start-browser t) clogframe)
+  (initialize 'on-new-browser :host host :port port)
+  (when clogframe
+    (uiop:run-program (list "./clogframe"
+                            "Explorateur Standalone"
+                            (format nil "~A" *clog-port*)
+                            "1280" "960")))
+  (when start-browser
+    (open-browser)))
+
+;; (defun start ()
+;;   (initialize #'on-new-browser)
+;;   (setf *initializedp* t)
+;;   ;;(open-browser)
+;;   )

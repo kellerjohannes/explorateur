@@ -4,6 +4,7 @@
   (:export
    :start-incudine-real-time-thread
    :stop-incudine-real-time-thread
+   :init
    ))
 
 
@@ -12,6 +13,7 @@
   (:nicknames :ui)
   (:export
    :start
+   :init
    :update-real-time-status))
 
 

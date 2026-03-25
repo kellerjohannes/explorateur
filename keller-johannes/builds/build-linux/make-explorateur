@@ -1,0 +1,1 @@
+sbcl --eval "(ql:quickload :explorateur)" --eval "(sb-ext:save-lisp-and-die #P\"explorateur-v0-1\" :toplevel (lambda () (ui:init :port 0 :start-browser nil :clogframe t) (loop (sleep 10))) :executable t :compression t)"
