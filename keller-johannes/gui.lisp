@@ -194,20 +194,60 @@
           (mp:getmp mp-key)
           (mp:get-range-string mp-key)))
 
+(defun make-tags-field (key)
+  (format nil "~{:~a~^, ~}" (mp:get-tag-list key)))
+
 (defun make-parameter-table-line (obj key)
-  (let* ((line (create-div obj :style (format nil "width:100%;padding:2px;display:flex;border-bottom:solid black 1px;")))
-         (key-field (create-span line
-                                 :content (string-downcase (format nil "~a" key))
-                                 :style "width:150px;padding:2px"))
-         (value-field (create-span line
-                                   :content (make-value-field key)
-                                   :style "width:100px;padding:2px")))
-    (mp:add-gui-hook key (lambda (new-content)
-                           (setf (text value-field) (make-value-field key))))))
+  (when (or (null (connection-data-item obj "active-metaparameter-tags"))
+            (union (connection-data-item obj "active-metaparameter-tags")
+                   (mp:get-tag-list key)))
+    (let* ((line (create-div obj :style (format nil "width:100%;padding:2px;display:flex;border-bottom:solid black 1px;")))
+           (key-field (create-span line
+                                   :content (string-downcase (format nil "~a" key))
+                                   :style "width:150px;padding:2px"))
+           (value-field (create-span line
+                                     :content (make-value-field key)
+                                     :style "width:100px;padding:2px"))
+           (tags-field (create-span line
+                                    :content (make-tags-field key)
+                                    :style "width:250px;padding:2px;font-size:small;font-family:monospace;")))
+      (mp:add-gui-hook key (lambda (new-content)
+                             (setf (text value-field) (make-value-field key)))))))
+
+(defun tag-active-p (active-tag-list tag)
+  (member tag active-tag-list))
+
+(defun create-tag-control-bar (container)
+  (dolist (tag (mp:get-all-defined-tags))
+    (let ((tag-control (create-div container
+                                   :content (format nil ":~a" tag)
+                                   :style "font-family:monospace;font-size:smaller;border:solid black 1px;margin:2px;padding:2px;"
+                                   )))
+      (setf (background-color tag-control) (if ()))
+      (set-on-mouse-over tag-control (lambda (obj)
+                                       (declare (ignore obj))
+                                       (setf (background-color tag-control) "yellow")))
+
+      (set-on-mouse-leave tag-control (lambda (obj)
+                                        (if (member tag (connection-data-item obj "active-metaparameter-tags"))
+                                            (setf (background-color tag-control) "green")
+                                            (setf (background-color tag-control) "transparent"))))
+      (set-on-click tag-control
+                    (lambda (obj)
+                      (if (member tag (connection-data-item obj "active-metaparameter-tags"))
+                          (setf (connection-data-item obj "active-metaparameter-tags")
+                                (delete tag (connection-data-item obj "active-metaparameter-tags")))
+                          (push tag (connection-data-item obj "active-metaparameter-tags")))
+                      (if (member tag (connection-data-item obj "active-metaparameter-tags"))
+                          (setf (background-color tag-control) "green")
+                          (setf (background-color tag-control) "transparent"))
+                      (format t "~&~a~%" (connection-data-item obj "active-metaparameter-tags")))))))
 
 (defun on-metaparameters-list (obj)
   (let* ((window (create-gui-window obj :title "Metaparameters"))
+         (tag-control-container (create-div (content window) :style "display:flex;flex-direction:row;gap:3px;width:100%;height:25px;"))
          (table (create-div (content window) :style "display:flex;flex-direction:column;")))
+    (create-tag-control-bar tag-control-container)
     (maphash (lambda (key parameter)
                (make-parameter-table-line table key))
              (mp:metaparameter-table))
@@ -231,18 +271,19 @@
                                     :content "Snapshot management"
                                     :on-click 'on-snapshot-management))
          (tmp (create-gui-menu-item parameters-menu
-                                   :content "Metaparameter list"
-                                   :on-click 'on-metaparameters-list))
+                                    :content "Metaparameter list"
+                                    :on-click 'on-metaparameters-list))
          (tmp (create-gui-menu-item parameters-menu
-                                   :content "Pipe list"
-                                   :on-click 'on-pipe-list))
+                                    :content "Pipe list"
+                                    :on-click 'on-pipe-list))
          (tmp (create-gui-menu-item parameters-menu
-                                   :content "Valve list"
-                                   :on-click 'on-valve-list)))
+                                    :content "Valve list"
+                                    :on-click 'on-valve-list)))
     (declare (ignore tmp))))
 
 (defun on-new-browser (body)
   (setf (title (html-document body)) "Explorateur Control Center")
+  (setf (connection-data-item body "active-metaparameter-tags") nil)
   (clog-gui-initialize body)
   (enable-clog-popup)
   (add-class body "w3-cyan")

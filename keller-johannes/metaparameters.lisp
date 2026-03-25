@@ -17,6 +17,7 @@
   ((content :initform nil :initarg :content :accessor content)
    (range-minimum :initform nil :initarg :range-minimum :accessor range-minimum)
    (range-maximum :initform nil :initarg :range-maximum :accessor range-maximum)
+   (tag-list :initform nil :accessor tag-list)
    (gui-hooks :initform nil :accessor gui-hooks)
    (processing-hooks :initform nil :accessor processing-hooks)))
 
@@ -29,6 +30,22 @@
   (dolist (hook *parameter-add-gui-hooks*)
     (funcall hook key))
   content)
+
+(defun add-tag-to-metaparameter (key tag-keyword)
+  (push tag-keyword (tag-list (gethash key *metaparameters*))))
+
+(defun get-tag-list (key)
+  (tag-list (gethash key *metaparameters*)))
+
+(defun get-all-defined-tags ()
+  (let ((result nil))
+    (maphash (lambda (key content)
+               (declare (ignore key))
+               (dolist (tag (tag-list content))
+                 (unless (member tag result)
+                   (push tag result))))
+             *metaparameters*)
+    result))
 
 (defun add-gui-hook (key fun)
   (let ((instance (gethash key *metaparameters*)))

@@ -31,6 +31,8 @@
   (:export
    :add-global-gui-hook
    :content
+   :get-tag-list
+   :get-all-defined-tags
    :number-of-metaparameters
    :metaparameter-table
    :add-gui-hook

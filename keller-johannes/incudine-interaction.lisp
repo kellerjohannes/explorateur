@@ -1,4 +1,4 @@
-(in-package :explorateur.inc)
+(in-package :explorateur.incudine)
 
 (defun start-real-time ()
   (rt-start))
