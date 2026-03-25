@@ -189,6 +189,29 @@
     (create-arciorgano-keyboard (content window))))
 
 
+
+
+
+(defstruct tag-filter
+  white-list
+  black-list)
+
+(defun tag-active-p (tag selection)
+  (member tag (tag-filter-white-list selection)))
+
+(defun parameter-active-p (key selection)
+  (intersection (mp:get-tag-list key) (tag-filter-white-list selection)))
+
+(defun add-tag-to-white-list (tag selection)
+  (unless (tag-active-p tag selection)
+    (push tag (tag-filter-white-list selection))))
+
+(defun remove-tag-from-white-list (tag selection)
+  (setf (tag-filter-white-list selection) (remove tag (tag-filter-white-list selection))))
+
+;; TODO Implement black list for tags
+
+
 (defun make-value-field (mp-key)
   (format nil "~a~@[ [~a]~]"
           (mp:getmp mp-key)
@@ -197,10 +220,11 @@
 (defun make-tags-field (key)
   (format nil "~{:~a~^, ~}" (mp:get-tag-list key)))
 
-(defun make-parameter-table-line (obj key)
-  (when (or (null (connection-data-item obj "active-metaparameter-tags"))
-            (union (connection-data-item obj "active-metaparameter-tags")
-                   (mp:get-tag-list key)))
+
+(defun make-parameter-table-line (obj key selection)
+  (format t "~&parameter active: ~a" (parameter-active-p key selection))
+  (when (or (null (tag-filter-white-list selection))
+            (parameter-active-p key selection))
     (let* ((line (create-div obj :style (format nil "width:100%;padding:2px;display:flex;border-bottom:solid black 1px;")))
            (key-field (create-span line
                                    :content (string-downcase (format nil "~a" key))
@@ -211,47 +235,43 @@
            (tags-field (create-span line
                                     :content (make-tags-field key)
                                     :style "width:250px;padding:2px;font-size:small;font-family:monospace;")))
+      (declare (ignore key-field tags-field))
       (mp:add-gui-hook key (lambda (new-content)
+                             (declare (ignore new-content))
                              (setf (text value-field) (make-value-field key)))))))
 
-(defun tag-active-p (active-tag-list tag)
-  (member tag active-tag-list))
-
-(defun create-tag-control-bar (container)
+(defun create-tag-control-bar (container selection table-container)
   (dolist (tag (mp:get-all-defined-tags))
     (let ((tag-control (create-div container
                                    :content (format nil ":~a" tag)
-                                   :style "font-family:monospace;font-size:smaller;border:solid black 1px;margin:2px;padding:2px;"
+                                   :style "font-family:monospace;font-size:smaller;border:solid black 1px;margin:2px;padding:2px;cursor:pointer;"
                                    )))
-      (setf (background-color tag-control) (if ()))
-      (set-on-mouse-over tag-control (lambda (obj)
-                                       (declare (ignore obj))
-                                       (setf (background-color tag-control) "yellow")))
-
-      (set-on-mouse-leave tag-control (lambda (obj)
-                                        (if (member tag (connection-data-item obj "active-metaparameter-tags"))
-                                            (setf (background-color tag-control) "green")
-                                            (setf (background-color tag-control) "transparent"))))
+      (setf (background-color tag-control) (if (tag-active-p tag selection) "green" "transparent"))
       (set-on-click tag-control
                     (lambda (obj)
-                      (if (member tag (connection-data-item obj "active-metaparameter-tags"))
-                          (setf (connection-data-item obj "active-metaparameter-tags")
-                                (delete tag (connection-data-item obj "active-metaparameter-tags")))
-                          (push tag (connection-data-item obj "active-metaparameter-tags")))
-                      (if (member tag (connection-data-item obj "active-metaparameter-tags"))
-                          (setf (background-color tag-control) "green")
-                          (setf (background-color tag-control) "transparent"))
-                      (format t "~&~a~%" (connection-data-item obj "active-metaparameter-tags")))))))
+                      (declare (ignore obj))
+                      (cond ((tag-active-p tag selection)
+                             (remove-tag-from-white-list tag selection)
+                             (setf (background-color tag-control) "transparent"))
+                            (t (add-tag-to-white-list tag selection)
+                               (setf (background-color tag-control) "green")))
+                      (create-metaparameter-table table-container selection))))))
+
+(defun create-metaparameter-table (container selection)
+  (clog::destroy-children container)
+  (maphash (lambda (key parameter)
+             (declare (ignore parameter))
+             (make-parameter-table-line container key selection))
+           (mp:metaparameter-table)))
 
 (defun on-metaparameters-list (obj)
-  (let* ((window (create-gui-window obj :title "Metaparameters"))
+  (let* ((selection (make-tag-filter :white-list nil :black-list nil))
+         (window (create-gui-window obj :title "Metaparameters"))
          (tag-control-container (create-div (content window) :style "display:flex;flex-direction:row;gap:3px;width:100%;height:25px;"))
          (table (create-div (content window) :style "display:flex;flex-direction:column;")))
-    (create-tag-control-bar tag-control-container)
-    (maphash (lambda (key parameter)
-               (make-parameter-table-line table key))
-             (mp:metaparameter-table))
-    (mp:add-global-gui-hook (lambda (key) (make-parameter-table-line table key)))))
+    (create-tag-control-bar tag-control-container selection table)
+    (create-metaparameter-table table selection)
+    (mp:add-global-gui-hook (lambda (key) (make-parameter-table-line table key selection)))))
 
 (defun create-menu (body)
   (let* ((menu-bar (create-gui-menu-bar body))
@@ -283,7 +303,6 @@
 
 (defun on-new-browser (body)
   (setf (title (html-document body)) "Explorateur Control Center")
-  (setf (connection-data-item body "active-metaparameter-tags") nil)
   (clog-gui-initialize body)
   (enable-clog-popup)
   (add-class body "w3-cyan")
