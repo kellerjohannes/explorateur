@@ -76,7 +76,8 @@
 
 (defun on-arciorgano-keyboard (obj)
   (let ((window (create-gui-window obj :width 1500 :height 800 :title "Arciorgano")))
-    (create-arciorgano-keyboard (content window))))
+    ;(create-arciorgano-keyboard (content window))
+    (create-keyboard (content window) *arciorgano-kbd*)))
 
 
 
