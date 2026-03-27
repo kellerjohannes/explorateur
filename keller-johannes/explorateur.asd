@@ -10,5 +10,6 @@
                (:file "incudine-interaction")
                (:file "modules")
                (:file "gui")
+               (:file "gui-keyboards")
                (:file "user-interaction-layer")
                ))
