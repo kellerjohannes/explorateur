@@ -23,6 +23,11 @@
 (defparameter *depth-row-3* 9)
 
 
+(defstruct key
+  whitep
+  width
+  )
+
 (defun create-keyboard (obj)
   (let* ((svg (create-svg-toplevel obj :width 1200 :height 500))
          (scale 2)
