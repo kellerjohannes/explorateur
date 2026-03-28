@@ -74,10 +74,17 @@
 
 
 
-(defun on-arciorgano-keyboard (obj)
-  (let ((window (create-gui-window obj :width 1500 :height 800 :title "Arciorgano")))
-    ;(create-arciorgano-keyboard (content window))
-    (create-keyboard (content window) *arciorgano-kbd*)))
+(defun on-keyboard (obj)
+  (let ((window (create-gui-window obj :width 1500 :height 800)))
+    (cond ((string-equal (text obj) "arciorgano")
+           (setf (window-title window) (getf *arciorgano* :name))
+           (create-keyboard (content window) *arciorgano*))
+          ((string-equal (text obj) "clavemusicum")
+           (setf (window-title window) (getf *clavemusicum* :name))
+           (create-keyboard (content window) *clavemusicum*)))
+
+    ;; (create-keyboard (content window) *clavemusicum*)
+    ))
 
 
 
@@ -176,7 +183,10 @@
          (keyboard-menu (create-gui-menu-drop-down menu-bar :content "Keyboards"))
          (tmp (create-gui-menu-item keyboard-menu
                                     :content "Arciorgano"
-                                    :on-click 'on-arciorgano-keyboard))
+                                    :on-click 'on-keyboard))
+         (tmp (create-gui-menu-item keyboard-menu
+                                    :content "Clavemusicum"
+                                    :on-click 'on-keyboard))
          (parameters-menu (create-gui-menu-drop-down menu-bar :content "Parameters"))
          (tmp (create-gui-menu-item parameters-menu
                                     :content "Snapshot management"
