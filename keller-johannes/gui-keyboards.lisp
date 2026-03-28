@@ -1,5 +1,16 @@
 (in-package :explorateur.ui)
 
+
+(defparameter *clavemusicum*
+  '(:total-depth 65 :white-width 12 :black-width 8 :row-depths (10 25 35 40 45 50 55)
+    :layout ((0 . 0) ; C
+             (1 . 1) (1 . 2) (1 . 4) (1 . 6)
+             (2 . 0) ; D
+             (3 . 1) (3 . 2) (3 . 4) (3 . 6) (4 . 0)
+             (5 . 3) (5 . 5) ; E
+             (6 . 0) ; F
+             )))
+
 (defparameter *arciorgano-kbd* '((0 . 0)
                                  (1 . 1)
                                  (1 . 2)
@@ -172,6 +183,7 @@
                                  (5 . 5)
                                  (6 . 0)))
 
+;; TODO Adapt to complete kbd descriptions
 (defun create-keyboard (clog-obj keyboard-layout)
   (let* ((svg (create-svg-toplevel clog-obj :width 1200 :height 500))
          (scale 4)
@@ -179,38 +191,38 @@
          (x-offset 40)
          (y-offset 320))
     (dolist (key (parse-keyboard-layout keyboard-layout))
-      (let ((shape (create-svg-ortho-shape svg
-                                           :x-origin (+ x-offset
-                                                        (* scale
-                                                           (- (* (key-axis key) (* 1/2 *white-width*))
-                                                              (if (key-whitep key)
-                                                                  (* 1/2 *white-width*)
-                                                                  (* 1/2 *black-width*))
-                                                              )))
-                                           :y-origin (+ y-offset
-                                                        (* scale
-                                                           (- (+ padding (aref *row-depths* (key-ordine key))))))
-                                           :fill (if (key-whitep key) "transparent" "gray")
-                                           :stroke "black"
-                                           :deltas (mapcar (lambda (distance) (* distance scale))
-                                                           (if (key-whitep key)
-                                                               (list (- (key-width key) (* 2 padding))
-                                                                     (- (- (key-right-front-leg key) (* 2 padding)))
-                                                                     (- (key-right-leg-offset key))
-                                                                     (- (key-right-back-leg key))
-                                                                     (- (- (key-back-width key) (* 2 padding)))
-                                                                     (key-left-back-leg key)
-                                                                     (- (key-right-leg-offset key)))
-                                                               (list (- (key-width key) (* 2 padding))
-                                                                     (- (- (key-right-front-leg key) (* 2 padding)))
-                                                                     (- (- (key-back-width key) (* 2 padding)))))))))
+      (let ((shape (create-svg-ortho-shape
+                    svg
+                    :x-origin (+ x-offset
+                                 (* scale
+                                    (- (* (key-axis key) (* 1/2 *white-width*))
+                                       (if (key-whitep key)
+                                           (* 1/2 *white-width*)
+                                           (* 1/2 *black-width*))
+                                       )))
+                    :y-origin (+ y-offset
+                                 (* scale
+                                    (- (+ padding (aref *row-depths* (key-ordine key))))))
+                    :fill (if (key-whitep key) "transparent" "gray")
+                    :stroke "black"
+                    :deltas (mapcar (lambda (distance) (* distance scale))
+                                    (if (key-whitep key)
+                                        (list (- (key-width key) (* 2 padding))
+                                              (- (- (key-right-front-leg key) (* 2 padding)))
+                                              (- (key-right-leg-offset key))
+                                              (- (key-right-back-leg key))
+                                              (- (- (key-back-width key) (* 2 padding)))
+                                              (key-left-back-leg key)
+                                              (- (key-right-leg-offset key)))
+                                        (list (- (key-width key) (* 2 padding))
+                                              (- (- (key-right-front-leg key) (* 2 padding)))
+                                              (- (- (key-back-width key) (* 2 padding)))))))))
         (set-on-mouse-over shape (lambda (obj)
                                    (declare (ignore obj))
                                    (setf (svg-attribute shape "fill") "blue")))
         (set-on-mouse-leave shape (lambda (obj)
                                     (declare (ignore obj))
-                                    (setf (svg-attribute shape "fill") "transparent"))))
-      )))
+                                    (setf (svg-attribute shape "fill") "transparent")))))))
 
 (defun create-arciorgano-keyboard (obj)
   (let* ((svg (create-svg-toplevel obj :width 1200 :height 500))
