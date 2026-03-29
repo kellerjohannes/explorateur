@@ -86,7 +86,11 @@
            (create-keyboard keyboard-container *arciorgano*))
           ((string-equal (text obj) "clavemusicum")
            (setf (window-title window) (getf *clavemusicum* :name))
-           (create-keyboard keyboard-container *clavemusicum*)))
+           (create-keyboard keyboard-container *clavemusicum*))
+          ((string-equal (text obj) "cimbalo cromatico bremen")
+           (setf (window-title window) (getf *bremen* :name))
+           (create-keyboard keyboard-container *bremen*))
+          )
 
     ;; (create-keyboard (content window) *clavemusicum*)
     ))
@@ -185,12 +189,15 @@
          (tmp (create-gui-menu-item system-menu
                                     :content "REPL"
                                     :on-click 'on-repl))
-         (keyboard-menu (create-gui-menu-drop-down menu-bar :content "Keyboards"))
+         (keyboard-menu (create-gui-menu-drop-down menu-bar :content "Vieltönige Keyboards"))
          (tmp (create-gui-menu-item keyboard-menu
                                     :content "Arciorgano"
                                     :on-click 'on-keyboard))
          (tmp (create-gui-menu-item keyboard-menu
                                     :content "Clavemusicum"
+                                    :on-click 'on-keyboard))
+         (tmp (create-gui-menu-item keyboard-menu
+                                    :content "Cimbalo Cromatico Bremen"
                                     :on-click 'on-keyboard))
          (parameters-menu (create-gui-menu-drop-down menu-bar :content "Parameters"))
          (tmp (create-gui-menu-item parameters-menu
