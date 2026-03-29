@@ -75,13 +75,18 @@
 
 
 (defun on-keyboard (obj)
-  (let ((window (create-gui-window obj :width 1500 :height 800)))
+  (let* ((window (create-gui-window obj :width 500 :height 300))
+         (controls-container (create-div (content window)
+                                         :content "Controls"
+                                         :style "width:100%;height:30px;padding:10px;"))
+         (keyboard-container (create-div (content window)
+                                         :style "padding:10px;")))
     (cond ((string-equal (text obj) "arciorgano")
            (setf (window-title window) (getf *arciorgano* :name))
-           (create-keyboard (content window) *arciorgano*))
+           (create-keyboard keyboard-container *arciorgano*))
           ((string-equal (text obj) "clavemusicum")
            (setf (window-title window) (getf *clavemusicum* :name))
-           (create-keyboard (content window) *clavemusicum*)))
+           (create-keyboard keyboard-container *clavemusicum*)))
 
     ;; (create-keyboard (content window) *clavemusicum*)
     ))

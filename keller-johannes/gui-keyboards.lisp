@@ -141,6 +141,8 @@
       (parse-loop (sort-keyboard-layout keyboard-layout)))
     result))
 
+(defun get-max-axis (keyboard)
+  (car (first (sort (copy-list (getf keyboard :layout)) #'> :key #'car))))
 
 (defun create-keyboard (clog-obj keyboard &key (scale 3) (padding 0.5))
   (let* ((white-width (getf keyboard :white-width))
@@ -148,18 +150,22 @@
          (total-depth (getf keyboard :total-depth))
          (row-depths (make-array (length (getf keyboard :row-depths))
                                  :initial-contents (getf keyboard :row-depths)))
-         (svg (create-svg-toplevel clog-obj :width 1200 ; TODO Calculate actual width of keyboard
+         (svg (create-svg-toplevel clog-obj :width (* (float scale)
+                                                      (1+ (floor (get-max-axis keyboard) 2))
+                                                      white-width)
                                             :height (* (float scale) total-depth))))
     (dolist (key (parse-keyboard-layout (getf keyboard :layout)
                                         white-width black-width row-depths total-depth))
       (let ((shape (create-svg-ortho-shape
                     svg
-                    :x-origin (+ (* (float scale) 1/2 (getf keyboard :white-width))
+                    :x-origin (+ 1
+                                 (* (float scale) 1/2 (getf keyboard :white-width))
                                  (* (float scale) (- (* (key-axis key) (* 1/2 white-width))
                                                      (if (key-whitep key)
                                                          (* 1/2 white-width)
                                                          (* 1/2 black-width)))))
-                    :y-origin (+ (* (float scale) (getf keyboard :total-depth))
+                    :y-origin (+ 1
+                                 (* (float scale) (getf keyboard :total-depth))
                                  (* (float scale) (- (+ padding
                                                         (aref row-depths (key-ordine key))))))
                     :fill (if (key-whitep key) "transparent" "gray")
