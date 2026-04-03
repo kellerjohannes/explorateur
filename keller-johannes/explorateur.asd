@@ -1,9 +1,10 @@
 (asdf:defsystem "explorateur"
-  :depends-on (:uiop :alexandria :incudine :drawer :clog :cl-svg)
+  :depends-on (:uiop :alexandria :incudine :drawer :clog :cl-svg :usocket)
   :serial t
   :components (
                (:file "clog-svg")
                (:file "packages")
+               (:file "udp-communication")
                (:file "metaparameters")
                ;;(:file "scratch")
                ;;(:file "ui")
