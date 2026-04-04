@@ -1,0 +1,22 @@
+<!DOCTYPE patchbay>
+<patchbay name="rudimentary" version="1.0.5">
+ <output-sockets>
+  <socket client="a2j" exclusive="off" name="a2j 1" type="jack-midi">
+   <plug>Faderfox\ EC4\ \[16\]\ \(capture\)\:\ Faderfox\ EC4\ MIDI\ 1</plug>
+  </socket>
+ </output-sockets>
+ <input-sockets>
+  <socket client="incudine" exclusive="off" name="incudine 1" type="jack-midi">
+   <plug>MIDI\ kbd\ A</plug>
+  </socket>
+  <socket client="incudine" exclusive="off" name="incudine 2" type="jack-midi">
+   <plug>MIDI\ kbd\ B</plug>
+  </socket>
+ </input-sockets>
+ <slots/>
+ <cables>
+  <cable input="incudine 1" output="a2j 1" type="jack-midi"/>
+  <cable input="incudine 2" output="a2j 1" type="jack-midi"/>
+ </cables>
+</patchbay>
+
