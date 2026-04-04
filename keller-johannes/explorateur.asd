@@ -4,6 +4,7 @@
   :components (
                (:file "clog-svg")
                (:file "packages")
+               (:file "midi-communication")
                (:file "udp-communication")
                (:file "metaparameters")
                ;;(:file "scratch")
