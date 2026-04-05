@@ -1,4 +1,4 @@
-(in-package :explorateur)
+(in-package :explorateur.midi)
 
 (defparameter *midi-connections* (make-hash-table))
 
@@ -12,7 +12,7 @@
   (setf (midi-stream connection)
         (jackmidi:open :direction (direction connection) :port-name (port-name connection))))
 
-(defmethod send ((connection midi-connection))
+(defmethod send ((connection midi-connection) status data1 data2)
   (jackmidi:write-short (midi-stream connection) (jackmidi:message status data1 data2) 3))
 
 (defmethod start-responder-loop ((connection midi-connection))
@@ -20,6 +20,16 @@
 
 (defmethod stop-responder-loop ((connection midi-connection))
   (incudine:recv-stop (midi-stream connection)))
+
+(defun make-hash-key (status data1)
+  (alexandria:make-keyword (string-upcase (format nil "M~a-~a" status data1))))
+
+(defmethod call-callbacks ((connection midi-connection) status data1 data2)
+  (let ((fun-list (gethash (make-hash-key status data1) (callbacks connection))))
+    (when fun-list
+      (dolist (callback fun-list)
+        (when (functionp callback)
+          (funcall callback status data1 data2))))))
 
 (defmethod initialize-instance :after ((connection midi-connection)
                                        &rest initargs
@@ -35,22 +45,11 @@
                              (call-callbacks connection status data1 data2)))
   (start-responder-loop connection))
 
-
-(defun make-hash-key (status data1)
-  (alexandria:make-keyword (string-upcase (format nil "M~a-~a" status data1))))
-
 (defmethod add-callback ((connection midi-connection) status data1 callback-fun)
   (push callback-fun (gethash (make-hash-key status data1) (callbacks connection))))
 
 (defmethod remove-callbacks ((connection midi-connection) status data1)
   (remhash (make-hash-key status data1) (callbacks connection)))
-
-(defmethod call-callbacks ((connection midi-connection) status data1 data2)
-  (let ((fun-list (gethash (make-hash-key status data1) (callbacks connection))))
-    (when fun-list
-      (dolist (callback fun-list)
-        (when (functionp callback)
-          (funcall callback status data1 data2))))))
 
 
 
@@ -69,15 +68,3 @@
 (defun start-all-responders ()
   (loop for connection being the hash-values of *midi-connections* do
         (start-responder-loop connection)))
-
-
-
-;; (register-midi-connection :triple-midi-kbd-a "MIDI kbd A" :input)
-;; (register-midi-connection :triple-midi-kbd-b "MIDI kbd B" :input)
-
-
-;; (register-midi-callback :triple-midi-kbd-b 144 64 (lambda (status data1 data2) (declare (ignore status data1 data2)) (format t "~&Note on 64 received!~%")))
-
-;; (register-midi-callback :triple-midi-kbd-b 144 64 (lambda (status data1 data2) (declare (ignore status data1 data2)) (format t "~&Note on 64 received as well!~%")))
-
-;; (register-midi-callback :triple-midi-kbd-b 144 65 (lambda (status data1 data2) (declare (ignore status data1 data2)) (format t "~&Note on 65 received!~%")))

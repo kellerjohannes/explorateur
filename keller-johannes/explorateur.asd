@@ -14,4 +14,5 @@
                (:file "gui")
                (:file "gui-keyboards")
                (:file "user-interaction-layer")
+               (:file "configuration")
                ))

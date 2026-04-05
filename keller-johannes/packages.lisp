@@ -16,6 +16,12 @@
    :init
    :update-real-time-status))
 
+(defpackage :explorateur.midi
+  (:use :cl)
+  (:nicknames :midi)
+  (:export
+   :register-midi-connection
+   :register-midi-callback))
 
 (defpackage :explorateur.incudine
   (:use :cl :incudine)
