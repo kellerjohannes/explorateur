@@ -1,5 +1,62 @@
 (in-package :explorateur.ui)
 
+(defparameter *std-12*
+  '(:name "Standard keyboard"
+    :description "Normal keyboard with 12 keys per octave."
+    :total-depth 40 :white-width 12 :black-width 8 :row-depths (0 20)
+    :layout ((0 . 0) ; C
+             (1 . 1)
+             (2 . 0) ; D
+             (3 . 1)
+             (4 . 0) ; E
+             (6 . 0) ; F
+             (7 . 1)
+             (8 . 0) ; G
+             (9 . 1)
+             (10 . 0) ; A
+             (11 . 1)
+             (12 . 0) ; B♮
+
+             (14 . 0) ; C
+             (15 . 1)
+             (16 . 0) ; D
+             (17 . 1)
+             (18 . 0) ; E
+             (20 . 0) ; F
+             (21 . 1)
+             (22 . 0) ; G
+             (23 . 1)
+             (24 . 0) ; A
+             (25 . 1)
+             (26 . 0) ; B♮
+
+             (28 . 0) ; C
+             (29 . 1)
+             (30 . 0) ; D
+             (31 . 1)
+             (32 . 0) ; E
+             (34 . 0) ; F
+             (35 . 1)
+             (36 . 0) ; G
+             (37 . 1)
+             (38 . 0) ; A
+             (39 . 1)
+             (40 . 0) ; B♮
+
+             (42 . 0) ; C
+             (43 . 1)
+             (44 . 0) ; D
+             (45 . 1)
+             (46 . 0) ; E
+             (48 . 0) ; F
+             (49 . 1)
+             (50 . 0) ; G
+             (51 . 1)
+             (52 . 0) ; A
+             (53 . 1)
+             (54 . 0) ; B♮
+             )))
+
 (defparameter *bremen*
   '(:name "Cimbalo Cromatico Bremen"
     :description "Cimbalo Cromatico with 19 keys per octave."

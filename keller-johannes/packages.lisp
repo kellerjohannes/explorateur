@@ -7,6 +7,11 @@
    :init
    ))
 
+(defpackage :explorateur.keyboard
+  (:use :cl)
+  (:nicknames :kbd)
+  (:export
+   ))
 
 (defpackage :explorateur.ui
   (:use :cl :clog :clog-gui)

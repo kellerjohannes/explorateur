@@ -12,6 +12,7 @@
                (:file "incudine-interaction")
                (:file "modules")
                (:file "gui")
+               (:file "keyboard")
                (:file "gui-keyboards")
                (:file "user-interaction-layer")
                (:file "configuration")

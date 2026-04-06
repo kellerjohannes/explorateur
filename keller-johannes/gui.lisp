@@ -81,7 +81,10 @@
                                          :style "width:100%;height:30px;padding:10px;"))
          (keyboard-container (create-div (content window)
                                          :style "padding:10px;")))
-    (cond ((string-equal (text obj) "arciorgano")
+    (cond ((string-equal (text obj) "standard keyboard")
+           (setf (window-title window) (getf *std-12* :name))
+           (create-keyboard keyboard-container *std-12*))
+          ((string-equal (text obj) "arciorgano")
            (setf (window-title window) (getf *arciorgano* :name))
            (create-keyboard keyboard-container *arciorgano*))
           ((string-equal (text obj) "clavemusicum")
@@ -89,10 +92,8 @@
            (create-keyboard keyboard-container *clavemusicum*))
           ((string-equal (text obj) "cimbalo cromatico bremen")
            (setf (window-title window) (getf *bremen* :name))
-           (create-keyboard keyboard-container *bremen*))
-          )
+           (create-keyboard keyboard-container *bremen*)))
 
-    ;; (create-keyboard (content window) *clavemusicum*)
     ))
 
 
@@ -190,6 +191,9 @@
                                     :content "REPL"
                                     :on-click 'on-repl))
          (keyboard-menu (create-gui-menu-drop-down menu-bar :content "Vieltönige Keyboards"))
+         (tmp (create-gui-menu-item keyboard-menu
+                                    :content "Standard keyboard"
+                                    :on-click 'on-keyboard))
          (tmp (create-gui-menu-item keyboard-menu
                                     :content "Arciorgano"
                                     :on-click 'on-keyboard))
