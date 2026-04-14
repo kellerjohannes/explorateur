@@ -67,10 +67,71 @@
     (incudine-clock-loop)
     ))
 
+;; (defparameter *repl-history* nil)
+
+;; (defun push-command-to-history (command-string)
+;;   (push (cons :command command-string) *repl-history*))
+
+;; (defun push-info-to-history (command-string)
+;;   (push (cons :info command-string) *repl-history*))
+
+;; (defun push-warning-to-history (command-string)
+;;   (push (cons :warning command-string) *repl-history*))
+
+;; (defun push-error-to-history (command-string)
+;;   (push (cons :error command-string) *repl-history*))
+
+;; (defun get-history ()
+;;   *repl-history*)
+
+
+
+;; (defun on-repl (obj)
+;;   ;; (declare (ignore obj))
+;;   (let* ((window (create-gui-window obj :width 400 :height 600))
+;;          (history-container (create-div (content window)
+;;                                         :style "width:100%;margin:3px;padding:2px;border:solid black 1px;background-color:gray;flex-direction:column;justify-content:flex-end;"))
+;;          (input-line (create-div (content window)
+;;                                  :style "width:100%;height:25px;margin:3px;padding:2px;border:solid black 2px;background-color:lightgreen;"))
+;;          (input-field (create-text-area input-line
+;;                                         :style "width:100%;")))
+;;     (setf (window-title window) "Common Lisp REPL")
+;;     (dolist (command (get-history))
+;;       (case (car command)
+;;         (:command (create-div history-container
+;;                               :content (cdr command)
+;;                               :style "width:100%;margin:3px;padding:2px;border-bottom:solid black 1px;background-color:lightblue;"))
+;;         (:info (create-div history-container
+;;                            :content (cdr command)
+;;                            :style "width:100%;margin:3px;padding:2px;border-bottom:solid black 1px;background-color:yellow;"))
+;;         (:warning (create-div history-container
+;;                            :content (cdr command)
+;;                            :style "width:100%;margin:3px;padding:2px;border-bottom:solid black 1px;background-color:orange;"))
+;;         (:error (create-div history-container
+;;                            :content (cdr command)
+;;                            :style "width:100%;margin:3px;padding:2px;border-bottom:solid black 1px;background-color:red;"))))
+;;     ))
+
 (defun on-repl (obj)
-  (declare (ignore obj))
-  ;; TODO Implement a custom REPL
-  )
+  (let* ((window (create-gui-window obj :title "Lisp REPL"))
+         (output (create-text-area (content window)))
+         (input (create-text-area (content window))))
+    (setf (read-only-p output) t)
+    (setf (rows output) 20)
+    (setf (columns output) 80)
+    (set-on-change input
+                   (lambda (obj)
+                     (declare (ignore obj))
+                     (let ((expr (value input)))
+                       (handler-case
+                           (let ((result (eval (read-from-string expr))))
+                             (setf (text output)
+                                   (format nil "~a~%~a => ~a"
+                                           (value output) expr result)))
+                         (error (e)
+                           (setf (text output)
+                                 (format nil "~a~%Error: ~a" (value output) e)))))
+                     (setf (value input) "")))))
 
 
 
