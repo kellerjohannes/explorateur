@@ -114,20 +114,26 @@
 
 (defun on-repl (obj)
   (let* ((window (create-gui-window obj :title "Lisp REPL"))
-         (output (create-text-area (content window)))
-         (input (create-text-area (content window))))
+         (form (create-form (content window)))
+         (output (create-text-area form))
+         (input (create-form-element form :text
+                                     :value "")))
+    (create-form-element form :submit :value "Enter")
+    (create-form-element form :reset :value "Clear")
+    (setf (place-holder input) "Command ...")
+    (setf (requiredp input) t)
     (setf (read-only-p output) t)
     (setf (rows output) 20)
     (setf (columns output) 80)
-    (set-on-change input
+    (set-on-submit form
                    (lambda (obj)
                      (declare (ignore obj))
+                     (format t "~&Processing Command ~a." (value input))
                      (let ((expr (value input)))
                        (handler-case
                            (let ((result (eval (read-from-string expr))))
                              (setf (text output)
-                                   (format nil "~a~%~a => ~a"
-                                           (value output) expr result)))
+                                   (format nil "~a~%~a => ~a" (value output) expr result)))
                          (error (e)
                            (setf (text output)
                                  (format nil "~a~%Error: ~a" (value output) e)))))
