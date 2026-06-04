@@ -15,5 +15,6 @@
                (:file "keyboard")
                (:file "gui-keyboards")
                (:file "user-interaction-layer")
+               (:file "dsl")
                (:file "configuration")
                ))

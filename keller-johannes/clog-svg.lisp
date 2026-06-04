@@ -147,9 +147,38 @@ clog['~a'] = newElement;"
                     :html-id html-id))
 
 
+(defun hex-coordinate (center-x center-y size index)
+  (let* ((angle-deg (- (* 60 index) 30))
+        (angle-rad (/ PI (* 180 angle-deg))))
+    (cons (+ (* size (cos angle-rad)) center-x)
+          (+ (* size (sin angle-rad)) center-y))))
+
+
+(defmethod create-svg-hex-shape ((obj clog-obj)
+                                 &key side-length x-origin y-origin html-id fill stroke)
+  (create-SVG-child obj
+                    "path"
+                    (list (list "d"
+                                (format nil "M ~a ~a ~{L ~a ~} Z"
+                                        x-origin
+                                        y-origin
+                                        (mapcar (lambda (i)
+                                                  (let ((pt (hex-coordinate x-origin
+                                                                            y-origin
+                                                                            side-length i)))
+                                                    (format nil "~f ~f"
+                                                            (float (car pt))
+                                                            (float (cdr pt)))))
+                                                '(0 1 2 3 4))))
+                          (list "fill" fill)
+                          (list "stroke" stroke))
+                    :clog-type 'clog-svg-ortho-shape
+                    :html-id html-id))
+
 
 (export 'create-svg-ortho-shape)
 (export 'create-svg-rect)
 (export 'create-svg-circle)
 (export 'create-svg-toplevel)
 (export 'svg-attribute)
+(export 'create-svg-hex-shape)

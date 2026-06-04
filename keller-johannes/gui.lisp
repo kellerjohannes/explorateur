@@ -159,9 +159,9 @@
            (create-keyboard keyboard-container *clavemusicum*))
           ((string-equal (text obj) "cimbalo cromatico bremen")
            (setf (window-title window) (getf *bremen* :name))
-           (create-keyboard keyboard-container *bremen*)))
-
-    ))
+           (create-keyboard keyboard-container *bremen*))
+          ((string-equal (text obj) "exquis")
+           (create-hexagonal-keyboard keyboard-container 6 9 0)))))
 
 
 
@@ -248,6 +248,7 @@
     (create-metaparameter-table table selection)
     (mp:add-global-gui-hook (lambda (key) (make-parameter-table-line table key selection)))))
 
+
 (defun create-menu (body)
   (let* ((menu-bar (create-gui-menu-bar body))
          (system-menu (create-gui-menu-drop-down menu-bar :content "System"))
@@ -269,6 +270,9 @@
                                     :on-click 'on-keyboard))
          (tmp (create-gui-menu-item keyboard-menu
                                     :content "Cimbalo Cromatico Bremen"
+                                    :on-click 'on-keyboard))
+         (tmp (create-gui-menu-item keyboard-menu
+                                    :content "Exquis"
                                     :on-click 'on-keyboard))
          (parameters-menu (create-gui-menu-drop-down menu-bar :content "Parameters"))
          (tmp (create-gui-menu-item parameters-menu

@@ -423,3 +423,29 @@
         (set-on-mouse-leave shape (lambda (obj)
                                     (declare (ignore obj))
                                     (setf (svg-attribute shape "fill") "transparent")))))))
+
+
+
+
+
+(defun create-hexagonal-keyboard (container rows columns angle
+                                  &key (key-width 20) (scale 2.5) (padding 5))
+  (let ((svg (create-svg-toplevel container :width (* scale key-width columns)
+                                            :height (* scale key-width rows))))
+
+
+    (let ((offset 0))
+      (dotimes (row rows)
+        (dotimes (column columns)
+          (let ((shape (create-svg-hex-shape svg
+                                             :side-length (- (* scale key-width) padding)
+                                             :stroke "black"
+                                             :fill "transparent"
+                                             :x-origin (+ offset (* column (* scale key-width)))
+                                             :y-origin (* row (* scale key-width)))))
+            (set-on-mouse-over shape (lambda (obj)
+                                       (declare (ignore obj))
+                                       (setf (svg-attribute shape "fill") "blue")))
+            (set-on-mouse-leave shape (lambda (obj)
+                                        (declare (ignore obj))
+                                        (setf (svg-attribute shape "fill") "transparent")))))))))
