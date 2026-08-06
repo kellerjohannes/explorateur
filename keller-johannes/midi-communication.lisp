@@ -96,6 +96,10 @@ Can be initialized before or after the realtime thread of Incudine started."))
   (setf (midi-stream connection)
         (jackmidi:open :direction (direction connection) :port-name (port-name connection))))
 
+(defmethod disconnect ((connection midi-connection))
+  "Closes a MIDI stream via jackmidi."
+  (jackmidi:close (midi-stream connection)))
+
 (defmethod send ((connection midi-connection) status data1 data2)
   "Generic MIDI send, via jackmidi."
   (jackmidi:write-short (midi-stream connection) (jackmidi:message status data1 data2) 3))
@@ -135,11 +139,15 @@ Can be initialized before or after the realtime thread of Incudine started."))
                              (funcall #'call-callbacks connection status data1 data2)))
   (start-responder-loop connection))
 
+(defmethod reset-dispatch-table ((connection midi-connection))
+  "Deletes the entire dispatch table."
+  (setf (dispatch-table connection) (make-hash-table)))
+
 (defmethod initialize-instance :after ((connection midi-connection)
                                        &rest initargs
                                        &key &allow-other-keys)
   (declare (ignore initargs))
-  (setf (dispatch-table connection) (make-hash-table))
+  (reset-dispatch-table connection)
   (init-midi-connection connection)
   (format t "~&MIDI connection ~a initialized." (port-name connection)))
 
@@ -161,6 +169,10 @@ The callback function must accept three arguments: status, data1 and data2."
 
 ;;; Public interface
 
+(defun disconnect-midi-port (id)
+  "Disconnects an open MIDI port referred to by ID."
+  (disconnect (get-midi-connection-instance id)))
+
 (defun register-midi-connection (id port-name direction)
   "Public function to add and open a MIDI port.
 
@@ -168,22 +180,32 @@ This function can be called before or after the INCUDINE real time thread has be
 that are registered while the real time thread is off will become visible and usable as soon as the
 real time thread is activated.  ID can be chosen freely and will be used as hash-key. PORT-NAME is a
 string that will be visible in MIDI managing software, for example qjackctl. DIRECTION can be :input
-or :output."
+or :output.
+
+If a MIDI connection with this ID is already established, calling this function will close the
+existing connection and establish a new one. This function can thus safely be called repeatedly
+without creating errors ('port already in use' or similar) and without leading to unintended
+redundancies."
+  (when (gethash id *midi-connections*) (disconnect-midi-port id))
   (setf (gethash id *midi-connections*) (make-instance 'midi-connection
                                                        :direction direction
                                                        :port-name port-name)))
 
-(defun register-midi-callback (connection-id status data1 callback-fun)
+(defun register-midi-callback (id status data1 callback-fun)
   "Public function to add a callback function to the dispatch table of a specific MIDI port.
 
-Each MIDI port, referred to by CONNECTION-ID, has its own dispatch table that stores callback
-functions. These functions are called when MIDI data is received. For each combination of STATUS and
-DATA1, there can be a list of callback functions that are called when an incoming MIDI message
-contains this STATUS and this DATA1.
+Each MIDI port, referred to by ID, has its own dispatch table that stores callback functions. These
+functions are called when MIDI data is received. For each combination of STATUS and DATA1, there can
+be a list of callback functions that are called when an incoming MIDI message contains this STATUS
+and this DATA1.
 
 This function adds one CALLBACK-FUN to the entry in the dispatch table. It must accept three
 arguments representing status, data1 and data2 of a MIDI message."
-  (add-callback (get-midi-connection-instance connection-id) status data1 callback-fun))
+  (add-callback (get-midi-connection-instance id) status data1 callback-fun))
+
+(defun clear-dispatch-table (id)
+  "Deletes the entire dispatch table of a MIDI connection with ID."
+  (reset-dispatch-table (get-midi-connection-instance id)))
 
 ;; TODO Delete, currently unused
 ;; (defun start-all-responders ()

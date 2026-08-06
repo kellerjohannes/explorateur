@@ -1,11 +1,17 @@
 (in-package :explorateur)
 
+(defun setup-exquis ()
+  (midi:register-midi-connection :exquis "MIDI Exquis in" :input)
+  (midi:clear-dispatch-table :exquis)
+  (midi:register-midi-callback :exquis 176 42 (lambda (status data1 data2)
+                                                (declare (ignore status data1))
+                                                (format t "~&2nd rotary value ~d." data2))))
 
 (defun init-connections ()
   (midi:register-midi-connection :triple-midi-kbd-a "MIDI kbd A" :input)
   (midi:register-midi-connection :triple-midi-kbd-b "MIDI kbd B" :input)
   (midi:register-midi-connection :triple-midi-kbd-c "MIDI kbd C" :input)
-  (midi:register-midi-connection :exquis "MIDI Exquis in" :input)
+  (setup-exquis)
   (format t "~&MIDI setup done.")
   )
 

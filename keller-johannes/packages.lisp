@@ -30,6 +30,7 @@
   (:export
    :register-midi-connection
    :register-midi-callback
+   :clear-dispatch-table
    ;; TODO might never be used: delete?
    :max-number-of-midi-lines
    :clear-midi-monitor
