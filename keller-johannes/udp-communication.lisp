@@ -1,3 +1,7 @@
+;; This is a proof of concept for a rudimentary custom data protocol. It was tested with a
+;; counterpart written in C++. As of now it is considered obsolete, since custom data protocols are
+;; a low priority in the development plan.
+
 (in-package :explorateur)
 
 (defparameter *socket* nil)
