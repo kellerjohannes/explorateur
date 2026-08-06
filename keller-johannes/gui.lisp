@@ -68,19 +68,27 @@
     ))
 
 (defun fill-midi-monitor (container lines)
-  (loop for line across lines
-        do (create-div container :content line :style "width:100%;margin:2px;border-bottom:1px solid black;")))
+  (setf (text container)
+        (with-output-to-string (result)
+          (loop for line across lines do
+                (write-line line result))))
+  (set-on-animation-frame (window (connection-data-item container "clog-body"))
+                          (lambda (obj timestamp)
+                            (declare (ignore obj timestamp))
+                            (js-execute container "this.scrollTop = this.scrollHeight;")))
+  (request-animation-frame (window (connection-data-item container "clog-body"))))
 
 (defun on-midi-monitor (obj)
+  (setf (connection-data-item obj "midi-monitor-autoscroll-p") t)
   (let* ((window (create-gui-window obj
                                     :title "MIDI Monitor"
                                     :width 500
                                     :height 700))
-         (text-container (create-div (content window) :style "margin:5px;gap:3px;")))
-    (fill-midi-monitor text-container (midi:dump-midi-monitor))
-    (midi:add-midi-monitor-hook (lambda (lines)
+         (text-container (create-section (content window) :pre :style "margin:5px;")))
+    (fill-midi-monitor text-container (midi:dump-midi-monitor 20))
+    (midi:add-midi-monitor-hook (lambda ()
                                   (destroy-children text-container)
-                                  (fill-midi-monitor text-container lines)))))
+                                  (fill-midi-monitor text-container (midi:dump-midi-monitor 20))))))
 
 ;; (defparameter *repl-history* nil)
 
@@ -308,6 +316,7 @@
     (declare (ignore tmp))))
 
 (defun on-new-browser (body)
+  (setf (connection-data-item body "clog-body") body)
   (setf (title (html-document body)) "Explorateur Control Center")
   (clog-gui-initialize body)
   (enable-clog-popup)

@@ -1,6 +1,6 @@
 (in-package :explorateur.midi)
 
-(defparameter *midi-monitor-number-of-lines* 15)
+(defparameter *midi-monitor-number-of-lines* 5000)
 (defparameter *midi-monitor* nil)
 (defparameter *midi-monitor-cursor* 0)
 
@@ -14,26 +14,20 @@
        (incf ,field)
        (setf ,field 0)))
 
-;; TODO check if ever used
-(defmacro dec-midi-monitor-cursor (field)
-  `(if (<= ,field 0)
-       (setf ,field (1- *midi-monitor-number-of-lines*))
-       (decf ,field)))
-
-
-(defun dump-midi-monitor ()
-  (let ((result (make-array *midi-monitor-number-of-lines*)))
+(defun dump-midi-monitor (&optional (number-of-lines *midi-monitor-number-of-lines*))
+  (let ((result (make-array number-of-lines)))
     (loop for line across *midi-monitor*
           for new-index from 0
+          for countdown downfrom number-of-lines
           with cursor = *midi-monitor-cursor*
-          do
-             (setf (aref result new-index) (aref *midi-monitor* cursor))
+          while (> countdown 0)
+          do (setf (aref result new-index) (aref *midi-monitor* cursor))
              (inc-midi-monitor-cursor cursor))
     result))
 
 (defun call-midi-monitor-hooks ()
   (dolist (hook *midi-monitor-gui-hooks*)
-    (funcall hook (dump-midi-monitor))))
+    (funcall hook)))
 
 (defun clear-midi-monitor ()
   (setf *midi-monitor-cursor* 0)
@@ -122,8 +116,6 @@ Can be initialized before or after the realtime thread of Incudine started."))
 
 (defmethod call-callbacks ((connection midi-connection) status data1 data2)
   "Call callback functions stored in the dispatch table of the MIDI connection."
-  ;; TODO remove debug output
-  (format t "~&DEBUG: ~a" status)
   (push-midi-monitor-line (incudine:now) status data1 data2)
   (dolist (callback (get-callback-functions connection status data1))
     (when (functionp callback) (funcall callback status data1 data2))))
