@@ -1,5 +1,5 @@
 (asdf:defsystem "explorateur"
-  :depends-on (:uiop :alexandria :incudine :drawer :clog :cl-svg :usocket)
+  :depends-on (:uiop :alexandria :incudine :drawer :clog :cl-svg :usocket :fiveam)
   :serial t
   :components (
                (:file "clog-svg")

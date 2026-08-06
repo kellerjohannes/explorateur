@@ -1,5 +1,66 @@
 (in-package :explorateur.midi)
 
+(defparameter *midi-monitor-number-of-lines* 15)
+(defparameter *midi-monitor* nil)
+(defparameter *midi-monitor-cursor* 0)
+
+(defparameter *midi-monitor-gui-hooks* '())
+
+(defun add-midi-monitor-hook (hook-fun)
+  (push hook-fun *midi-monitor-gui-hooks*))
+
+(defmacro inc-midi-monitor-cursor (field)
+  `(if (< ,field (1- *midi-monitor-number-of-lines*))
+       (incf ,field)
+       (setf ,field 0)))
+
+;; TODO check if ever used
+(defmacro dec-midi-monitor-cursor (field)
+  `(if (<= ,field 0)
+       (setf ,field (1- *midi-monitor-number-of-lines*))
+       (decf ,field)))
+
+
+(defun dump-midi-monitor ()
+  (let ((result (make-array *midi-monitor-number-of-lines*)))
+    (loop for line across *midi-monitor*
+          for new-index from 0
+          with cursor = *midi-monitor-cursor*
+          do
+             (setf (aref result new-index) (aref *midi-monitor* cursor))
+             (inc-midi-monitor-cursor cursor))
+    result))
+
+(defun call-midi-monitor-hooks ()
+  (dolist (hook *midi-monitor-gui-hooks*)
+    (funcall hook (dump-midi-monitor))))
+
+(defun clear-midi-monitor ()
+  (setf *midi-monitor-cursor* 0)
+  (setf *midi-monitor* (make-array *midi-monitor-number-of-lines* :initial-element "[empty]"))
+  (call-midi-monitor-hooks))
+
+(clear-midi-monitor)
+
+(defun push-midi-monitor-line (time type data1 data2)
+  (setf (aref *midi-monitor* *midi-monitor-cursor*)
+        (format nil "~a ~a ~a ~a"
+                time
+                type
+                data1
+                data2))
+  (inc-midi-monitor-cursor *midi-monitor-cursor*)
+  (call-midi-monitor-hooks))
+
+
+;; TODO Might never be used: delete?
+(defun max-number-midi-lines ()
+  *midi-monitor-number-of-lines*)
+
+
+
+
+
 (defparameter *midi-connections* (make-hash-table))
 
 (defclass midi-connection ()
@@ -25,6 +86,8 @@
   (alexandria:make-keyword (string-upcase (format nil "M~a-~a" status data1))))
 
 (defmethod call-callbacks ((connection midi-connection) status data1 data2)
+  (format t "~&DEBUG: ~a" status)
+  (push-midi-monitor-line (incudine:now) status data1 data2)
   (let ((fun-list (gethash (make-hash-key status data1) (callbacks connection))))
     (when fun-list
       (dolist (callback fun-list)

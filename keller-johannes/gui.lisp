@@ -67,6 +67,21 @@
     (incudine-clock-loop)
     ))
 
+(defun fill-midi-monitor (container lines)
+  (loop for line across lines
+        do (create-div container :content line :style "width:100%;margin:2px;border-bottom:1px solid black;")))
+
+(defun on-midi-monitor (obj)
+  (let* ((window (create-gui-window obj
+                                    :title "MIDI Monitor"
+                                    :width 500
+                                    :height 700))
+         (text-container (create-div (content window) :style "margin:5px;gap:3px;")))
+    (fill-midi-monitor text-container (midi:dump-midi-monitor))
+    (midi:add-midi-monitor-hook (lambda (lines)
+                                  (destroy-children text-container)
+                                  (fill-midi-monitor text-container lines)))))
+
 ;; (defparameter *repl-history* nil)
 
 ;; (defun push-command-to-history (command-string)
@@ -255,6 +270,9 @@
          (tmp (create-gui-menu-item system-menu
                                     :content "Incudine Monitor"
                                     :on-click 'on-incudine-monitor))
+         (tmp (create-gui-menu-item system-menu
+                                    :content "MIDI Monitor"
+                                    :on-click 'on-midi-monitor))
          (tmp (create-gui-menu-item system-menu
                                     :content "REPL"
                                     :on-click 'on-repl))

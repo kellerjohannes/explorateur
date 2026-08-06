@@ -1,3 +1,6 @@
+(defpackage :explorateur.testing
+  (:use :cl :fiveam))
+
 (defpackage :explorateur
   (:use :cl)
   (:nicknames :explo)
@@ -26,7 +29,13 @@
   (:nicknames :midi)
   (:export
    :register-midi-connection
-   :register-midi-callback))
+   :register-midi-callback
+   ;; TODO might never be used: delete?
+   :max-number-of-midi-lines
+   :clear-midi-monitor
+   :dump-midi-monitor
+   :add-midi-monitor-hook
+   ))
 
 (defpackage :explorateur.incudine
   (:use :cl :incudine)
