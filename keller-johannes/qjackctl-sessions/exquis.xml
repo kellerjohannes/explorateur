@@ -1,0 +1,95 @@
+<!DOCTYPE patchbay>
+<patchbay name="exquis" version="1.0.6">
+ <output-sockets>
+  <socket client="system" exclusive="off" name="system" type="jack-audio">
+   <plug>capture_1</plug>
+   <plug>capture_2</plug>
+  </socket>
+  <socket client="incudine" exclusive="off" name="incudine" type="jack-audio">
+   <plug>out_1</plug>
+   <plug>out_2</plug>
+   <plug>out_3</plug>
+   <plug>out_4</plug>
+   <plug>out_5</plug>
+   <plug>out_6</plug>
+   <plug>out_7</plug>
+   <plug>out_8</plug>
+   <plug>out_9</plug>
+   <plug>out_10</plug>
+   <plug>out_11</plug>
+   <plug>out_12</plug>
+   <plug>out_13</plug>
+   <plug>out_14</plug>
+   <plug>out_15</plug>
+   <plug>out_16</plug>
+  </socket>
+  <socket client="system" exclusive="off" name="system" type="jack-midi">
+   <plug>midi_capture_1</plug>
+   <plug>midi_capture_6</plug>
+   <plug>midi_capture_7</plug>
+  </socket>
+  <socket client="a2j" exclusive="off" name="a2j" type="jack-midi">
+   <plug>Midi\ Through\ \[14\]\ \(capture\)\:\ Midi\ Through\ Port\-0</plug>
+   <plug>Exquis\ \[20\]\ \(capture\)\:\ Exquis\ MIDI\ 1</plug>
+   <plug>Exquis\ \[20\]\ \(capture\)\:\ Exquis\ MIDI\ 2</plug>
+  </socket>
+  <socket client="a2j" exclusive="off" name="a2j 2" type="jack-midi">
+   <plug>Exquis\ \[20\]\ \(capture\)\:\ Exquis\ MIDI\ 1</plug>
+  </socket>
+  <socket client="Midi\ Through" exclusive="off" name="Midi Through" type="alsa-midi">
+   <plug>Midi\ Through\ Port\-0</plug>
+  </socket>
+  <socket client="Exquis" exclusive="off" name="Exquis" type="alsa-midi">
+   <plug>Exquis\ MIDI\ 1</plug>
+   <plug>Exquis\ MIDI\ 2</plug>
+  </socket>
+ </output-sockets>
+ <input-sockets>
+  <socket client="system" exclusive="off" name="system" type="jack-audio">
+   <plug>playback_1</plug>
+   <plug>playback_2</plug>
+  </socket>
+  <socket client="incudine" exclusive="off" name="incudine" type="jack-audio">
+   <plug>in_1</plug>
+   <plug>in_2</plug>
+  </socket>
+  <socket client="system" exclusive="off" name="system" type="jack-midi">
+   <plug>midi_playback_1</plug>
+   <plug>midi_playback_6</plug>
+   <plug>midi_playback_7</plug>
+  </socket>
+  <socket client="a2j" exclusive="off" name="a2j" type="jack-midi">
+   <plug>Midi\ Through\ \[14\]\ \(playback\)\:\ Midi\ Through\ Port\-0</plug>
+   <plug>Exquis\ \[20\]\ \(playback\)\:\ Exquis\ MIDI\ 1</plug>
+   <plug>Exquis\ \[20\]\ \(playback\)\:\ Exquis\ MIDI\ 2</plug>
+  </socket>
+  <socket client="incudine" exclusive="off" name="incudine" type="jack-midi">
+   <plug>MIDI\ kbd\ A</plug>
+   <plug>MIDI\ kbd\ B</plug>
+   <plug>MIDI\ kbd\ C</plug>
+   <plug>MIDI\ Exquis\ in</plug>
+  </socket>
+  <socket client="incudine" exclusive="off" name="incudine 2" type="jack-midi">
+   <plug>MIDI\ Exquis\ in</plug>
+  </socket>
+  <socket client="Midi\ Through" exclusive="off" name="Midi Through" type="alsa-midi">
+   <plug>Midi\ Through\ Port\-0</plug>
+  </socket>
+  <socket client="Exquis" exclusive="off" name="Exquis" type="alsa-midi">
+   <plug>Exquis\ MIDI\ 1</plug>
+   <plug>Exquis\ MIDI\ 2</plug>
+  </socket>
+  <socket client="jack_midi" exclusive="off" name="jack_midi" type="alsa-midi">
+   <plug>port</plug>
+  </socket>
+  <socket client="a2jmidid" exclusive="off" name="a2jmidid" type="alsa-midi">
+   <plug>port</plug>
+   <plug>port</plug>
+  </socket>
+ </input-sockets>
+ <slots/>
+ <cables>
+  <cable input="incudine" output="a2j" type="jack-midi"/>
+ </cables>
+</patchbay>
+

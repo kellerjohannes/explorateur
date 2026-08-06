@@ -8,6 +8,7 @@
    :start-incudine-real-time-thread
    :stop-incudine-real-time-thread
    :init
+   :main
    ))
 
 (defpackage :explorateur.keyboard

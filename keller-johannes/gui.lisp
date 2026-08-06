@@ -71,24 +71,19 @@
   (setf (text container)
         (with-output-to-string (result)
           (loop for line across lines do
-                (write-line line result))))
-  (set-on-animation-frame (window (connection-data-item container "clog-body"))
-                          (lambda (obj timestamp)
-                            (declare (ignore obj timestamp))
-                            (js-execute container "this.scrollTop = this.scrollHeight;")))
-  (request-animation-frame (window (connection-data-item container "clog-body"))))
+                (write-line line result)))))
 
 (defun on-midi-monitor (obj)
   (setf (connection-data-item obj "midi-monitor-autoscroll-p") t)
   (let* ((window (create-gui-window obj
-                                    :title "MIDI Monitor"
-                                    :width 500
+                                    :title "MIDI Log"
+                                    :width 580
                                     :height 700))
          (text-container (create-section (content window) :pre :style "margin:5px;")))
-    (fill-midi-monitor text-container (midi:dump-midi-monitor 20))
+    (fill-midi-monitor text-container (midi:dump-midi-monitor 500))
     (midi:add-midi-monitor-hook (lambda ()
                                   (destroy-children text-container)
-                                  (fill-midi-monitor text-container (midi:dump-midi-monitor 20))))))
+                                  (fill-midi-monitor text-container (midi:dump-midi-monitor 500))))))
 
 ;; (defparameter *repl-history* nil)
 
@@ -279,7 +274,7 @@
                                     :content "Incudine Monitor"
                                     :on-click 'on-incudine-monitor))
          (tmp (create-gui-menu-item system-menu
-                                    :content "MIDI Monitor"
+                                    :content "MIDI Log"
                                     :on-click 'on-midi-monitor))
          (tmp (create-gui-menu-item system-menu
                                     :content "REPL"

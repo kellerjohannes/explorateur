@@ -14,15 +14,20 @@
        (incf ,field)
        (setf ,field 0)))
 
+(defmacro dec-midi-monitor-cursor (field)
+  `(if (<= ,field 0)
+       (setf ,field (1- *midi-monitor-number-of-lines*))
+       (decf ,field)))
+
 (defun dump-midi-monitor (&optional (number-of-lines *midi-monitor-number-of-lines*))
   (let ((result (make-array number-of-lines)))
     (loop for line across *midi-monitor*
           for new-index from 0
           for countdown downfrom number-of-lines
-          with cursor = *midi-monitor-cursor*
+          with cursor = (1- *midi-monitor-cursor*)
           while (> countdown 0)
           do (setf (aref result new-index) (aref *midi-monitor* cursor))
-             (inc-midi-monitor-cursor cursor))
+             (dec-midi-monitor-cursor cursor))
     result))
 
 (defun call-midi-monitor-hooks ()
@@ -36,13 +41,26 @@
 
 (clear-midi-monitor)
 
-(defun push-midi-monitor-line (time type data1 data2)
+(defun lookup-status-type (status)
+  (cond ((<= #x80 status #x8f) (cons :note-off (- status #x80)))
+        ((<= #x90 status #x9f) (cons :note-on (- status #x90)))
+        ((<= #xa0 status #xaf) (cons :key-pressure (- status #xa0)))
+        ((<= #xb0 status #xbf) (cons :controller (- status #xb0)))
+        ((<= #xc0 status #xcf) (cons :program-change (- status #xc0)))
+        ((<= #xd0 status #xdf) (cons :pitch-bend (- status #xd0)))
+        (t (cons :unidentified status))))
+
+(defun push-midi-monitor-line (connection time status data1 data2)
   (setf (aref *midi-monitor* *midi-monitor-cursor*)
-        (format nil "~a ~a ~a ~a"
-                time
-                type
-                data1
-                data2))
+        (let ((status-resolved (lookup-status-type status)))
+          (format nil "~a: [@~d] ~a (~a/CH~a) | ~a | ~a"
+                  (port-name connection)
+                  (floor time)
+                  status
+                  (car status-resolved)
+                  (cdr status-resolved)
+                  data1
+                  data2)))
   (inc-midi-monitor-cursor *midi-monitor-cursor*)
   (call-midi-monitor-hooks))
 
@@ -116,7 +134,7 @@ Can be initialized before or after the realtime thread of Incudine started."))
 
 (defmethod call-callbacks ((connection midi-connection) status data1 data2)
   "Call callback functions stored in the dispatch table of the MIDI connection."
-  (push-midi-monitor-line (incudine:now) status data1 data2)
+  (push-midi-monitor-line connection (inc:get-current-sample) status data1 data2)
   (dolist (callback (get-callback-functions connection status data1))
     (when (functionp callback) (funcall callback status data1 data2))))
 
