@@ -79,7 +79,7 @@
   ((direction
     :reader direction
     :initform :input
-    :initarg :directon
+    :initarg :direction
     :documentation
     "MIDI direction, :input or :output are possible.")
    (port-name
@@ -105,6 +105,9 @@ Can be initialized before or after the realtime thread of Incudine started."))
 
 (defmethod connect ((connection midi-connection))
   "Connect via jackmidi. This can be done before or after the real time thread started."
+  (format t "~&Connectin ~a (direction ~a)."
+          (port-name connection)
+          (direction connection))
   (setf (midi-stream connection)
         (jackmidi:open :direction (direction connection) :port-name (port-name connection))))
 
@@ -143,11 +146,12 @@ Can be initialized before or after the realtime thread of Incudine started."))
   (when (and (midi-stream connection) (jackmidi:open-p (midi-stream connection)))
     (jackmidi:close (midi-stream connection)))
   (connect connection)
-  (incudine:remove-all-responders (midi-stream connection))
-  (incudine:make-responder (midi-stream connection)
-                           (lambda (status data1 data2)
-                             (funcall #'call-callbacks connection status data1 data2)))
-  (start-responder-loop connection))
+  (when (eq (direction connection) :input)
+    (incudine:remove-all-responders (midi-stream connection))
+    (incudine:make-responder (midi-stream connection)
+                             (lambda (status data1 data2)
+                               (funcall #'call-callbacks connection status data1 data2)))
+    (start-responder-loop connection)))
 
 (defmethod reset-dispatch-table ((connection midi-connection))
   "Deletes the entire dispatch table."

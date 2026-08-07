@@ -12,6 +12,7 @@
   (midi:register-midi-connection :triple-midi-kbd-b "MIDI kbd B" :input)
   (midi:register-midi-connection :triple-midi-kbd-c "MIDI kbd C" :input)
   (setup-exquis)
+  (midi:register-midi-connection :effect-out "MIDI effects out" :output)
   (format t "~&MIDI setup done.")
   )
 
