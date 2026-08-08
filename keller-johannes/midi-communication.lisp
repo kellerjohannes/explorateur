@@ -50,6 +50,19 @@
         ((<= #xd0 status #xdf) (cons :pitch-bend (- status #xd0)))
         (t (cons :unidentified status))))
 
+
+(defun lookup-status-byte (status-keyword channel)
+  (case status-keyword
+    (:note-off (+ #x80 channel))
+    (:note-on (+ #x90 channel))
+    (:key-pressure (+ #xa0 channel))
+    (:controller (+ #xb0 channel))
+    (:program-change (+ #xc0 channel))
+    (:pitch-bend (+ #xd0 channel))
+    (t
+     (format t "~&Warning: MIDI msg status keyword unknown: ~a" status-keyword)
+     0)))
+
 (defun push-midi-monitor-line (connection time status data1 data2)
   (setf (aref *midi-monitor* *midi-monitor-cursor*)
         (let ((status-resolved (lookup-status-type status)))
@@ -117,6 +130,7 @@ Can be initialized before or after the realtime thread of Incudine started."))
 
 (defmethod send ((connection midi-connection) status data1 data2)
   "Generic MIDI send, via jackmidi."
+  (format t "~&MIDI ~a/~a/~a" status data1 data2)
   (jackmidi:write-short (midi-stream connection) (jackmidi:message status data1 data2) 3))
 
 (defmethod start-responder-loop ((connection midi-connection))
@@ -221,7 +235,38 @@ arguments representing status, data1 and data2 of a MIDI message."
   "Deletes the entire dispatch table of a MIDI connection with ID."
   (reset-dispatch-table (get-midi-connection-instance id)))
 
-;; TODO Delete, currently unused
-;; (defun start-all-responders ()
-;;   (loop for connection being the hash-values of *midi-connections* do
-;;         (start-responder-loop connection)))
+(defun send-msg-raw (connection-id status data1 data2)
+  (send (get-midi-connection-instance connection-id) status data1 data2))
+
+(defun send-msg (connection-id status-keyword channel data1 data2)
+  (send (get-midi-connection-instance connection-id)
+        (lookup-status-byte status-keyword channel) data1 data2))
+
+(defun update-midi-valve (connection-id channel note pressure)
+  (send-msg connection-id :key-pressure channel note pressure))
+
+(defparameter *loopingp* t)
+(defun stop () (setf *loopingp* nil))
+(defun arm () (setf *loopingp* t))
+
+(defun random-pressure-loop (connection-id channel note step-duration-in-samp
+                             &optional (time (inc:get-current-sample)))
+  (when *loopingp*
+    (update-midi-valve connection-id channel note (random 128))
+    (incudine:at (+ time step-duration-in-samp)
+                 #'random-pressure-loop
+                 connection-id
+                 channel
+                 note
+                 step-duration-in-samp
+                 (+ time step-duration-in-samp))))
+
+(defun random-pressure-channel (connection-id channel step-duration-in-samp)
+  (arm)
+  (dotimes (note 8)
+    (random-pressure-loop connection-id channel note step-duration-in-samp)))
+
+(defun random-pressure (connection-id step-duration-in-s)
+  (arm)
+  (dotimes (ch 16)
+    (random-pressure-channel connection-id ch (* (inc:get-sample-rate) step-duration-in-s))))
