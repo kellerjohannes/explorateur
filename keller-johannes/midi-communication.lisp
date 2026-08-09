@@ -269,3 +269,137 @@ arguments representing status, data1 and data2 of a MIDI message."
   (arm)
   (dotimes (ch 16)
     (random-pressure-channel connection-id ch (* (inc:get-sample-rate) step-duration-in-s))))
+
+
+;; brute force
+(defun stress-test-loop-1 (valve-id step-duration-in-samp &optional (time (inc:get-current-sample)))
+  (when *loopingp*
+    (send-osc valve-id (random 2000))
+    (incudine:at (+ time step-duration-in-samp)
+                 #'stress-test-loop-1
+                 valve-id
+                 step-duration-in-samp
+                 (+ time step-duration-in-samp))))
+
+;; brute force
+(defun stress-test-osc-1 (number-of-loops step-duration-in-s)
+  (arm)
+  (dotimes (l number-of-loops)
+    (stress-test-loop-1 l (* step-duration-in-s (inc:get-sample-rate)))))
+
+
+
+
+(defparameter *num-valves* 1000)
+
+(defparameter *valve-pressures* (make-array *num-valves* :element-type 'single-float
+                                                         :initial-element 0.0f0))
+
+(defun build-blob-message-template (num-floats)
+  "Build a static OSC message with address /valves/pressure and a blob
+   argument placeholder. Returns (values octets-vector blob-data-offset
+   blob-size)."
+  (let* ((address "/valves/pressure")
+         (blob-size (* num-floats 4))  ; 1000 * 4 = 4000 bytes
+         ;; Calculate padded sizes
+         (addr-padded (ceiling (1+ (length address)) 4))  ; includes null
+         (addr-bytes (* addr-padded 4))
+         (type-tag "b")
+         (type-padded (ceiling (1+ (length type-tag)) 4))
+         (type-bytes (* type-padded 4))
+         ;; Blob: 4 bytes size + blob-size bytes + padding to 4
+         (blob-padded (ceiling blob-size 4))
+         (blob-total-bytes (* blob-padded 4))
+         ;; Total message size
+         (total (+ addr-bytes type-bytes 4 blob-total-bytes))
+         ;; Create byte vector
+         (vec (make-array total :element-type '(unsigned-byte 8)
+                                :initial-element 0))
+         (offset 0))
+    ;; Write address pattern (null-terminated, 4-byte aligned)
+    (loop for c across address
+          do (setf (aref vec offset) (char-code c))
+             (incf offset))
+    ;; null terminator + padding already zero-filled
+    (setf offset addr-bytes)
+    ;; Write type tag string (starts with comma)
+    (loop for c across type-tag
+          do (setf (aref vec offset) (char-code c))
+             (incf offset))
+    (setf offset type-bytes)
+    ;; Write blob size as int32 big-endian
+    (setf (aref vec offset)       (ldb (byte 8 24) blob-size))
+    (setf (aref vec (1+ offset))  (ldb (byte 8 16) blob-size))
+    (setf (aref vec (+ 2 offset)) (ldb (byte 8 8)  blob-size))
+    (setf (aref vec (+ 3 offset)) (ldb (byte 8 0)  blob-size))
+    (setf offset (+ offset 4))
+    ;; Mark where the blob data starts
+    (let ((blob-data-offset offset))
+      (values vec blob-data-offset blob-size))))
+
+(multiple-value-bind (tpl-vec tpl-offset tpl-size)
+    (build-blob-message-template *num-valves*)
+  (defvar *blob-template* tpl-vec)
+  (defvar *blob-data-offset* tpl-offset)
+  (defvar *blob-data-size* tpl-size))
+
+(defun copy-floats-to-blob (float-array blob-vec start-index)
+  "Copy single-floats from FLOAT-ARRAY into BLOB-VEC starting at
+   START-INDEX. Encodes each float as 4 bytes (little-endian on x86,
+   but OSC requires big-endian — we swap if needed).
+   This is non-consing: it writes directly into the pre-allocated
+   byte vector."
+  (declare (type (simple-array single-float (*)) float-array)
+           (type (simple-array (unsigned-byte 8) (*)) blob-vec)
+           (type fixnum start-index)
+           (optimize (speed 3) (safety 0)))
+  (let ((offset start-index)
+        (len (length float-array)))
+    (declare (type fixnum offset len))
+    (dotimes (i len)
+      (let ((bits (sb-kernel:single-float-bits (aref float-array i))))
+        (declare (type (signed-byte 32) bits))
+        ;; Big-endian encoding for OSC network byte order
+        (setf (aref blob-vec offset)       (ldb (byte 8 24) bits))
+        (setf (aref blob-vec (1+ offset))  (ldb (byte 8 16) bits))
+        (setf (aref blob-vec (+ 2 offset)) (ldb (byte 8 8)  bits))
+        (setf (aref blob-vec (+ 3 offset)) (ldb (byte 8 0)  bits))
+        (incf offset 4)))
+    blob-vec))
+
+(defun valve-update-tick (time)
+  "Real-time tick: copy valve pressures into OSC blob and send."
+  ;; 1. Your wind model updates *valve-pressures* here
+  ;; (update-wind-model *valve-pressures*)
+
+  ;; 2. Copy float array into the blob region of the pre-built message
+  (copy-floats-to-blob *valve-pressures*
+                       *blob-template*
+                       *blob-data-offset*)
+
+  ;; 3. Load the complete message bytes into the OSC stream
+  (osc:octets-to-buffer *blob-template* *osc-out*)
+
+  ;; 4. Send as a bundle (with time tag) or as a plain message
+  (osc:send-bundle *osc-out* time)
+  ;; Alternatively: (osc:send *oscout*)  for immediate send without bundle
+
+  ;; Schedule next tick (1 ms = 48 samples at 48 kHz)
+  (incudine:aat (+ time (* 0.001 (inc:get-sample-rate))) #'valve-update-tick it))
+
+(incudine.util:rt-eval () (valve-update-tick (incudine:now)))
+
+
+(incudine:flush-pending)
+
+
+
+;;; OSC prototyping
+;; TODO Migrate to a separate, dedicated OSC source file and its own package
+
+
+(defparameter *osc-out* (osc:open :port 5000 :direction :output :protocol :udp))
+
+
+(defun send-osc (valve-id pressure-value)
+  (osc:message *osc-out* (format nil "/exp/v~d/" valve-id) "i" pressure-value))
