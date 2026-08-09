@@ -130,7 +130,6 @@ Can be initialized before or after the realtime thread of Incudine started."))
 
 (defmethod send ((connection midi-connection) status data1 data2)
   "Generic MIDI send, via jackmidi."
-  (format t "~&MIDI ~a/~a/~a" status data1 data2)
   (jackmidi:write-short (midi-stream connection) (jackmidi:message status data1 data2) 3))
 
 (defmethod start-responder-loop ((connection midi-connection))
@@ -263,7 +262,7 @@ arguments representing status, data1 and data2 of a MIDI message."
 
 (defun random-pressure-channel (connection-id channel step-duration-in-samp)
   (arm)
-  (dotimes (note 8)
+  (dotimes (note 128)
     (random-pressure-loop connection-id channel note step-duration-in-samp)))
 
 (defun random-pressure (connection-id step-duration-in-s)
